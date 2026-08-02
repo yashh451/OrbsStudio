@@ -10,10 +10,10 @@ Chrome, Safari and Firefox, and renders crisply from 16px to 512px on HiDPI.
 
 ## Install
 
-Copy `orb-dots.js` into your project. That's it.
+Copy `orbs-studio.js` into your project. That's it.
 
 ```html
-<script src="orb-dots.js"></script>
+<script src="orbs-studio.js"></script>
 
 <!-- any canvas with data-orb mounts itself automatically -->
 <canvas data-orb="searching" data-size="24"></canvas>
@@ -84,7 +84,7 @@ renders at 64px and displays at 40px for extra crispness.
 ## React
 
 ```jsx
-import OrbDot from './OrbDots.jsx';
+import OrbDot from './OrbsStudio.jsx';
 
 export function AgentStatus({ busy }) {
   return (
@@ -97,7 +97,7 @@ export function AgentStatus({ busy }) {
 ```
 
 All other props (`className`, `style`, `data-*`, `aria-label`) pass to the canvas.
-TypeScript definitions ship in `orb-dots.d.ts`.
+TypeScript definitions ship in `orbs-studio.d.ts`.
 
 ## Theming
 

@@ -227,7 +227,7 @@ footer a:hover{color:var(--fg)}
  * This is an independent implementation.
  *
  *   <canvas data-orb="searching" data-size="24"></canvas>
- *   <script src="orb-dots.js"><\/script>          // auto-mounts [data-orb]
+ *   <script src="orbs-studio.js"><\/script>          // auto-mounts [data-orb]
  *
  *   const orb = OrbDots.create(canvas, { state: 'thinking', size: 64 });
  *   orb.setState('solving'); orb.setSpeed(1.5); orb.pause(); orb.destroy();
@@ -858,7 +858,7 @@ return {
   }
   var TABS={
     install:[
-      ['HTML','<b>&lt;script src="orb-dots.js"&gt;&lt;/script&gt;</b>\n\n'+
+      ['HTML','<b>&lt;script src="orbs-studio.js"&gt;&lt;/script&gt;</b>\n\n'+
         '&lt;!-- any canvas with data-orb mounts automatically --&gt;\n'+
         '<b>&lt;canvas data-orb="searching" data-size="24"&gt;&lt;/canvas&gt;</b>'],
       ['JavaScript','<b>const orb = OrbDots.create(canvas, {\n'+
@@ -869,12 +869,12 @@ return {
         'orb.pause(); orb.play();   // freeze / resume\n'+
         'orb.toPNG();               // data URL snapshot\n'+
         'orb.destroy();             // full cleanup'],
-      ['React','import OrbDot from \'./OrbDots.jsx\';\n\n'+
+      ['React','import OrbDot from \'./OrbsStudio.jsx\';\n\n'+
         'function Status({ busy }) {\n'+
         '  return (\n'+
         '    <b>&lt;OrbDot state="thinking" size={24} /&gt;</b>\n'+
         '  );\n}'],
-      ['TypeScript','import OrbDots, { OrbState } from \'./orb-dots\';\n\n'+
+      ['TypeScript','import OrbDots, { OrbState } from \'./orbs-studio\';\n\n'+
         'const state: OrbState = \'composing\';\n'+
         'const orb = OrbDots.create(canvasEl, { state, size: 64 });']
     ],

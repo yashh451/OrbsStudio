@@ -1,272 +1,2068 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Orbs Studio — animated thinking orbs for AI &amp; agent UIs</title>
-<meta name="description" content="Dotted thought-orb loading indicators for AI and agent interfaces. Six animated states, size-tuned presets, auto dark/light, zero dependencies.">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orb Studio</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#070707; --surface:rgba(217,217,217,.035); --pill:rgba(29,29,29,.55);
-  --stroke:rgba(255,255,255,.07); --fg:#fbfbfb; --muted:rgba(251,251,251,.55);
-  --faint:rgba(251,251,251,.3); --line:rgba(255,255,255,.08);
-  --code-bg:#0d0d0f; --accent:#64f0d2; --btn:rgba(255,255,255,.06);
-  --btn-hover:rgba(255,255,255,.11);
+  --bg:#08090c; --panel:#0e1116; --raised:#141922; --hover:#1a2029;
+  --border:#1e2530; --border-soft:#171d26;
+  --text:#dce3ec; --muted:#7a8494; --faint:#4a5261;
+  --accent:#64f0d2; --accent-dim:rgba(100,240,210,.12);
+  --danger:#ff6b6b;
+  --mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  --disp:'Space Grotesk',system-ui,-apple-system,sans-serif;
 }
-html[data-theme="light"]{
-  --bg:#f4f5f7; --surface:rgba(0,0,0,.028); --pill:rgba(255,255,255,.75);
-  --stroke:rgba(0,0,0,.07); --fg:#0d0d0f; --muted:rgba(7,7,7,.6);
-  --faint:rgba(7,7,7,.38); --line:rgba(0,0,0,.09);
-  --code-bg:#ffffff; --accent:#0f9c85; --btn:rgba(0,0,0,.05);
-  --btn-hover:rgba(0,0,0,.09);
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--text);font-family:var(--disp);font-size:13px}
+button{font-family:inherit;color:inherit;background:none;border:none;cursor:pointer}
+input{font-family:inherit}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:#232b37;border-radius:4px}
+::-webkit-scrollbar-track{background:transparent}
+
+#app{display:grid;height:100vh;
+  grid-template-rows:46px 1fr 58px;
+  grid-template-columns:236px 1fr 264px;
+  grid-template-areas:"top top top" "left view right" "left states right";
 }
-*{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--fg);font-family:Inter,system-ui,-apple-system,sans-serif;
-  font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased;
-  transition:background .25s,color .25s}
-main{max-width:883px;margin:0 auto;padding:0 24px 80px}
-a{color:inherit}
-button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
-code,pre{font-family:'JetBrains Mono',ui-monospace,Menlo,monospace}
 
-/* header */
-header{padding:56px 0 40px;text-align:center;position:relative}
-.hero-orb{display:flex;justify-content:center;margin-bottom:22px}
-h1{font-size:34px;font-weight:600;letter-spacing:-.02em;margin-bottom:10px}
-.sub{color:var(--muted);font-size:16px;max-width:520px;margin:0 auto}
-.topnav{position:absolute;top:20px;right:0;display:flex;gap:8px}
-.iconbtn{width:36px;height:36px;border-radius:50%;background:var(--btn);
-  display:flex;align-items:center;justify-content:center;font-size:14px;
-  transition:background .2s}
-.iconbtn:hover{background:var(--btn-hover)}
+/* ---------- Topbar ---------- */
+#topbar{grid-area:top;display:flex;align-items:center;gap:14px;padding:0 14px;
+  background:var(--panel);border-bottom:1px solid var(--border)}
+.brand{display:flex;align-items:center;gap:9px;font-weight:600;letter-spacing:.02em;font-size:14px}
+.brand-dot{width:14px;height:14px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#b9fff0,var(--accent) 45%,#0b6b58 100%);
+  box-shadow:0 0 10px rgba(100,240,210,.7)}
+.brand small{color:var(--faint);font-family:var(--mono);font-size:10px;font-weight:400;margin-left:2px}
+#topbar .spacer{flex:1}
+.tbtn{display:flex;align-items:center;gap:6px;padding:6px 11px;border-radius:6px;
+  border:1px solid var(--border);background:var(--raised);color:var(--muted);
+  font-size:12px;font-weight:500;transition:all .15s}
+.tbtn:hover{color:var(--text);border-color:#2c3644}
+.tbtn.primary{background:var(--accent);border-color:var(--accent);color:#052620;font-weight:600}
+.tbtn.primary:hover{filter:brightness(1.08)}
+.tbtn svg{width:13px;height:13px}
 
-/* hero examples */
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
-.card{background:var(--surface);border-radius:26px;display:flex;align-items:center;
-  justify-content:center;padding:44px 24px;min-height:200px}
-.card.sm{min-height:132px}
-.pill{display:inline-flex;align-items:center;gap:13px;padding:9px 30px 9px 10px;
-  border-radius:999px;background:var(--pill);box-shadow:inset 0 0 0 1px var(--stroke);
-  font-size:17px}
-.chip{display:inline-flex;align-items:center;gap:9px;padding:7px 15px 7px 8px;
-  border-radius:999px;background:var(--pill);box-shadow:inset 0 0 0 1px var(--stroke);
-  font-size:12.5px}
-.shim{background:linear-gradient(90deg,var(--muted) 35%,var(--fg) 50%,var(--muted) 65%);
-  background-size:300% 100%;-webkit-background-clip:text;background-clip:text;
-  color:transparent;animation:shim 2.4s linear infinite}
-@keyframes shim{from{background-position:150% 0}to{background-position:-50% 0}}
-@media (prefers-reduced-motion:reduce){.shim{animation:none;color:var(--muted);background:none;-webkit-text-fill-color:currentColor}}
+/* ---------- Left sidebar ---------- */
+#left{grid-area:left;background:var(--panel);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;overflow:hidden}
+.side-head{padding:12px 14px 8px;font-family:var(--mono);font-size:10px;letter-spacing:.14em;
+  color:var(--faint);text-transform:uppercase}
+#search{margin:0 12px 10px;padding:7px 10px;border-radius:6px;border:1px solid var(--border);
+  background:var(--bg);color:var(--text);font-size:12px;width:calc(100% - 24px);outline:none}
+#search:focus{border-color:#31527a}
+#preset-list{flex:1;overflow-y:auto;padding:0 8px 16px}
+.cat{margin-bottom:2px}
+.cat-head{display:flex;align-items:center;gap:7px;width:100%;padding:7px 8px;border-radius:6px;
+  color:var(--muted);font-size:12px;font-weight:600;letter-spacing:.01em}
+.cat-head:hover{color:var(--text)}
+.cat-head .chev{margin-left:auto;transition:transform .15s;font-size:9px;color:var(--faint)}
+.cat.open .chev{transform:rotate(90deg)}
+.cat-items{display:none;padding:2px 0 4px}
+.cat.open .cat-items{display:block}
+.preset{display:flex;align-items:center;gap:9px;width:100%;padding:6px 8px 6px 14px;
+  border-radius:6px;color:var(--muted);font-size:12.5px;text-align:left;transition:background .1s}
+.preset:hover{background:var(--hover);color:var(--text)}
+.preset.active{background:var(--accent-dim);color:var(--accent)}
+.swatch{width:12px;height:12px;border-radius:50%;flex-shrink:0;box-shadow:0 0 6px var(--sw,transparent)}
 
-/* sections */
-section{margin-top:52px}
-h2{font-size:17px;font-weight:600;margin-bottom:6px}
-.lead{color:var(--muted);font-size:14px;margin-bottom:18px}
+/* ---------- Viewport ---------- */
+#view{grid-area:view;position:relative;background:
+  radial-gradient(1200px 700px at 50% 42%, #0c1017 0%, var(--bg) 70%)}
+#gl{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:grab}
+#gl:active{cursor:grabbing}
+.hud{position:absolute;left:14px;bottom:12px;font-family:var(--mono);font-size:10px;
+  color:var(--faint);display:flex;gap:14px;pointer-events:none}
+.hud b{color:var(--muted);font-weight:500}
+#preset-name{position:absolute;top:14px;left:16px;pointer-events:none}
+#preset-name .nm{font-size:15px;font-weight:600;letter-spacing:.01em}
+#preset-name .ct{font-family:var(--mono);font-size:10px;color:var(--faint);letter-spacing:.12em;text-transform:uppercase;margin-top:2px}
+.view-tools{position:absolute;top:14px;right:14px;display:flex;gap:6px}
+.vbtn{padding:6px 10px;border-radius:6px;border:1px solid var(--border);
+  background:rgba(14,17,22,.8);backdrop-filter:blur(6px);color:var(--muted);font-size:11.5px}
+.vbtn:hover{color:var(--text)}
 
-/* code */
-.codebox{background:var(--code-bg);border:1px solid var(--line);border-radius:14px;overflow:hidden}
-.codetabs{display:flex;gap:2px;padding:8px 8px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
-.codetab{padding:7px 13px;border-radius:8px 8px 0 0;font-size:12.5px;color:var(--muted)}
-.codetab.on{color:var(--fg);background:var(--btn)}
-.codebody{position:relative}
-pre{padding:16px 18px;overflow-x:auto;font-size:12.5px;line-height:1.65;color:var(--muted)}
-pre b{color:var(--fg);font-weight:500}
-.copy{position:absolute;top:10px;right:10px;padding:6px 11px;border-radius:8px;
-  background:var(--btn);font-size:11.5px;color:var(--muted)}
-.copy:hover{background:var(--btn-hover);color:var(--fg)}
+/* ---------- State bar ---------- */
+#states{grid-area:states;background:var(--panel);border-top:1px solid var(--border);
+  display:flex;align-items:center;gap:6px;padding:0 14px;overflow-x:auto}
+#states .lbl{font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--faint);
+  text-transform:uppercase;margin-right:8px;flex-shrink:0}
+.state{padding:7px 13px;border-radius:20px;border:1px solid var(--border);color:var(--muted);
+  font-size:12px;font-weight:500;white-space:nowrap;transition:all .15s;flex-shrink:0}
+.state:hover{color:var(--text);border-color:#2c3644}
+.state.active{background:var(--accent-dim);border-color:rgba(100,240,210,.4);color:var(--accent)}
 
-/* playground */
-.pg{display:grid;grid-template-columns:1fr 300px;gap:16px}
-.stage{background:var(--surface);border-radius:26px;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;gap:26px;padding:36px 20px;min-height:340px}
-.sizes{display:flex;align-items:flex-end;gap:24px}
-.sizes figure{display:flex;flex-direction:column;align-items:center;gap:8px}
-.sizes figcaption{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--faint)}
-.panel{background:var(--surface);border-radius:20px;padding:16px}
-.field{margin-bottom:14px}
-.field label{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:6px}
-.field label span{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--faint)}
+/* ---------- Right inspector ---------- */
+#right{grid-area:right;background:var(--panel);border-left:1px solid var(--border);
+  overflow-y:auto;padding-bottom:20px}
+.insp-sec{border-bottom:1px solid var(--border-soft)}
+.insp-head{display:flex;align-items:center;width:100%;padding:11px 14px;
+  font-size:12px;font-weight:600;color:var(--text);letter-spacing:.01em}
+.insp-head .chev{margin-left:auto;font-size:9px;color:var(--faint);transition:transform .15s}
+.insp-sec.open .insp-head .chev{transform:rotate(90deg)}
+.insp-body{display:none;padding:2px 14px 14px}
+.insp-sec.open .insp-body{display:block}
+.ctl{margin-bottom:11px}
+.ctl-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
+.ctl-lbl{font-size:11.5px;color:var(--muted)}
+.ctl-val{font-family:var(--mono);font-size:10.5px;color:var(--faint)}
 input[type=range]{-webkit-appearance:none;width:100%;height:3px;border-radius:2px;
-  background:var(--line);outline:none}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;
-  border-radius:50%;background:var(--fg);cursor:pointer}
-input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;
-  background:var(--fg);border:none;cursor:pointer}
-input[type=color]{-webkit-appearance:none;width:100%;height:26px;border:1px solid var(--line);
-  border-radius:7px;background:none;padding:2px;cursor:pointer}
-input[type=color]::-webkit-color-swatch-wrapper{padding:0}
-input[type=color]::-webkit-color-swatch{border:none;border-radius:5px}
-.states{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
-.stbtn{padding:7px 13px;border-radius:999px;background:var(--btn);font-size:12.5px;
-  color:var(--muted);transition:all .15s}
-.stbtn:hover{background:var(--btn-hover);color:var(--fg)}
-.stbtn.on{background:var(--accent);color:#052620;font-weight:500}
-.chips{display:flex;gap:5px;flex-wrap:wrap}
-.szchip{padding:5px 10px;border-radius:8px;background:var(--btn);font-size:11.5px;color:var(--muted)}
-.szchip.on{background:var(--btn-hover);color:var(--fg)}
-footer{margin-top:64px;text-align:center;color:var(--faint);font-size:13px}
-footer a{color:var(--muted);text-decoration:none}
-footer a:hover{color:var(--fg)}
-@media (max-width:820px){
-  .grid2{grid-template-columns:1fr}
-  .pg{grid-template-columns:1fr}
-  h1{font-size:27px}
+  background:#232b37;outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;
+  border-radius:50%;background:#cfd8e3;border:2px solid var(--panel);cursor:pointer;
+  transition:background .1s}
+input[type=range]:hover::-webkit-slider-thumb{background:var(--accent)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;
+  background:#cfd8e3;border:2px solid var(--panel);cursor:pointer}
+.color-ctl{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.color-ctl input[type=color]{-webkit-appearance:none;width:38px;height:22px;border:1px solid var(--border);
+  border-radius:5px;background:none;cursor:pointer;padding:0}
+.color-ctl input[type=color]::-webkit-color-swatch-wrapper{padding:2px}
+.color-ctl input[type=color]::-webkit-color-swatch{border:none;border-radius:3px}
+.sel{background:var(--bg);border:1px solid var(--border);color:var(--text);
+  border-radius:6px;padding:5px 8px;font-size:12px;font-family:inherit;outline:none;cursor:pointer}
+.sel:focus{border-color:#31527a}
+.toggle-ctl{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.tog{position:relative;width:32px;height:18px;border-radius:10px;background:#232b37;transition:background .15s}
+.tog::after{content:'';position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;
+  background:#8a94a3;transition:all .15s}
+.tog.on{background:var(--accent)}
+.tog.on::after{left:16px;background:#052620}
+
+/* ---------- mode switch + dot stage ---------- */
+.modesw{display:flex;gap:2px;background:var(--raised);border:1px solid var(--border);
+  border-radius:7px;padding:2px;margin-left:6px}
+.msw{padding:5px 11px;border-radius:5px;font-size:11.5px;font-weight:500;color:var(--muted)}
+.msw.active{background:var(--hover);color:var(--text)}
+#dotstage{position:absolute;inset:0;display:none;flex-direction:column;
+  align-items:center;justify-content:center;gap:26px}
+#dotstage.on{display:flex}
+#dotmain{width:120px;height:120px}
+#sizechips{display:flex;align-items:center;gap:6px;background:rgba(14,17,22,.75);
+  border:1px solid var(--border);border-radius:9px;padding:7px 11px;backdrop-filter:blur(6px)}
+.sclbl{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;color:var(--faint);
+  text-transform:uppercase;margin-right:2px}
+.schip{padding:4px 9px;border-radius:6px;font-size:11px;color:var(--muted);
+  border:1px solid transparent}
+.schip:hover{color:var(--text)}
+.schip.active{background:var(--accent-dim);border-color:rgba(100,240,210,.35);color:var(--accent)}
+#sizerange{width:120px;margin-left:6px}
+.sval{font-family:var(--mono);font-size:10px;color:var(--faint);width:38px;text-align:right}
+#dotstage.light #sizechips{background:rgba(255,255,255,.8);border-color:#dfe4ea}
+#dotstage.light .schip{color:#5a6472}
+#dotstage.light .sclbl,#dotstage.light .sval{color:#8a94a3}
+#dotsizes{display:flex;align-items:flex-end;gap:26px}
+.dsz{display:flex;flex-direction:column;align-items:center;gap:7px}
+.dsz span{font-family:var(--mono);font-size:9.5px;color:var(--faint)}
+#dotctx .bubble{display:flex;align-items:center;gap:9px;padding:9px 15px 9px 12px;
+  border-radius:16px;background:var(--raised);border:1px solid var(--border);
+  font-size:12.5px;color:var(--muted)}
+#dotstage.light #dotctx .bubble{background:#fff;border-color:#dfe4ea;color:#4a5261}
+/* ---------- node editor ---------- */
+#nodes-panel{position:fixed;left:236px;right:264px;bottom:58px;height:0;
+  background:rgba(10,13,18,.97);border-top:1px solid var(--border);
+  backdrop-filter:blur(8px);overflow:hidden;transition:height .22s ease;z-index:40}
+#nodes-panel.open{height:min(48vh,420px)}
+.np-head{display:flex;align-items:center;gap:12px;padding:9px 14px;border-bottom:1px solid var(--border-soft)}
+.np-head b{font-size:12px;font-weight:600}
+.np-hint{font-family:var(--mono);font-size:10px;color:var(--faint)}
+.np-x{margin-left:auto;color:var(--muted);padding:2px 6px}
+.np-x:hover{color:var(--text)}
+.np-canvas{position:relative;width:100%;height:calc(100% - 38px);overflow:hidden;
+  background-image:radial-gradient(circle,#1a212c 1px,transparent 1px);background-size:22px 22px}
+#np-wires{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+#np-wires path{pointer-events:stroke;cursor:pointer}
+.node{position:absolute;width:132px;background:var(--raised);border:1px solid var(--border);
+  border-radius:9px;box-shadow:0 6px 18px rgba(0,0,0,.45);user-select:none}
+.node.off{opacity:.42}
+.node .nh{padding:6px 9px;font-size:11px;font-weight:600;border-bottom:1px solid var(--border-soft);
+  cursor:grab;display:flex;align-items:center;gap:6px;border-radius:9px 9px 0 0}
+.node .nh .dot{width:7px;height:7px;border-radius:50%;background:var(--accent)}
+.node.off .nh .dot{background:var(--faint)}
+.node .nb{padding:7px 9px 9px}
+.node .nrow{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:3px}
+.node .nrow span:last-child{font-family:var(--mono);color:var(--faint)}
+.node input[type=range]{height:3px;margin-bottom:6px}
+.port{position:absolute;width:11px;height:11px;border-radius:50%;background:#222b38;
+  border:1.5px solid #3a4756;cursor:crosshair;top:14px}
+.port:hover,.port.armed{background:var(--accent);border-color:var(--accent)}
+.port.in{left:-6px}.port.out{right:-6px}
+/* ---------- toast / misc ---------- */
+#toast{position:fixed;bottom:74px;left:50%;transform:translateX(-50%) translateY(8px);
+  background:var(--raised);border:1px solid var(--border);border-radius:8px;
+  padding:9px 15px;font-size:12px;color:var(--text);opacity:0;pointer-events:none;
+  transition:opacity .2s,transform .2s;z-index:60}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.tbtn.on{background:var(--accent-dim);border-color:rgba(100,240,210,.4);color:var(--accent)}
+.tbtn:disabled{opacity:.35;cursor:default}
+.preset .del{margin-left:auto;color:var(--faint);font-size:12px;padding:0 3px;opacity:0}
+.preset:hover .del{opacity:1}
+.preset .del:hover{color:var(--danger)}
+#level{position:absolute;left:14px;top:14px;width:3px;height:0;background:var(--accent);
+  border-radius:2px;transition:height .06s;box-shadow:0 0 8px var(--accent)}
+/* ---------- Modal ---------- */
+#modal{position:fixed;inset:0;background:rgba(4,5,8,.72);backdrop-filter:blur(4px);
+  display:none;align-items:center;justify-content:center;z-index:50}
+#modal.show{display:flex}
+.modal-box{width:min(720px,92vw);max-height:84vh;display:flex;flex-direction:column;
+  background:var(--raised);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.modal-head{display:flex;align-items:center;padding:14px 18px;border-bottom:1px solid var(--border)}
+.modal-head h3{font-size:14px;font-weight:600}
+.modal-head .x{margin-left:auto;color:var(--muted);font-size:16px;padding:4px 8px}
+.modal-head .x:hover{color:var(--text)}
+.tabs{display:flex;gap:4px;padding:10px 18px 0}
+.tab{padding:7px 13px;border-radius:7px 7px 0 0;font-size:12px;font-weight:500;color:var(--muted);
+  border:1px solid transparent;border-bottom:none}
+.tab.active{color:var(--text);background:var(--bg);border-color:var(--border)}
+.code-wrap{flex:1;overflow:auto;margin:0 18px 14px;background:var(--bg);
+  border:1px solid var(--border);border-radius:0 8px 8px 8px}
+.code-wrap pre{padding:14px;font-family:var(--mono);font-size:11px;line-height:1.55;color:#a8b4c4;
+  white-space:pre;tab-size:2}
+.modal-foot{display:flex;gap:8px;padding:0 18px 16px}
+.hint{font-family:var(--mono);font-size:10px;color:var(--faint);padding:8px 18px 4px}
+
+@media (max-width:980px){
+  #app{grid-template-columns:200px 1fr 232px}
 }
 </style>
 </head>
 <body>
-<main>
-  <header>
-    <div class="topnav">
-      <a class="iconbtn" href="orb-studio.html" title="Open Orb Studio" aria-label="Open Orb Studio" style="text-decoration:none;display:flex;align-items:center;justify-content:center;font-size:14px">⚙</a>
-      <button class="iconbtn" id="theme-btn" title="Toggle theme" aria-label="Toggle theme">◐</button>
+<div id="app">
+  <div id="topbar">
+    <div class="brand"><span class="brand-dot"></span>Orb Studio<small>v2.0</small></div>
+    <div class="modesw">
+      <button class="msw active" data-mode="3d">3D Orb</button>
+      <button class="msw" data-mode="dots">Dot Orb</button>
     </div>
-    <div class="hero-orb"><canvas id="hero"></canvas></div>
-    <h1>Orb Dots</h1>
-    <p class="sub">Dotted thought-orb loading indicators for AI &amp; agent UIs.
-       Six animated states, size-tuned presets, auto dark/light, zero dependencies.</p>
-  </header>
-
-  <!-- hero examples -->
-  <div class="grid2">
-    <div class="card"><div class="pill">
-      <canvas data-orb="solving" data-size="56"></canvas>
-      <span class="shim">Solving&hellip;</span></div></div>
-    <div class="card"><div class="pill">
-      <canvas data-orb="composing" data-size="56"></canvas>
-      <span class="shim">Composing&hellip;</span></div></div>
-  </div>
-  <div class="grid2">
-    <div class="card sm"><div class="chip">
-      <canvas data-orb="working" data-size="20"></canvas>
-      <span>Agent working&hellip;</span></div></div>
-    <div class="card sm"><div class="chip">
-      <canvas data-orb="listening" data-size="20"></canvas>
-      <span>Agent listening&hellip;</span></div></div>
-    <div class="card sm"><div class="chip">
-      <canvas data-orb="searching" data-size="20"></canvas>
-      <span>Agent searching&hellip;</span></div></div>
-    <div class="card sm"><div class="chip">
-      <canvas data-orb="shaping" data-size="20"></canvas>
-      <span>Agent shaping&hellip;</span></div></div>
+    <div class="spacer"></div>
+    <button class="tbtn" id="btn-undo" title="Undo (⌘Z)">↶</button>
+    <button class="tbtn" id="btn-redo" title="Redo (⇧⌘Z)">↷</button>
+    <button class="tbtn" id="btn-mic" title="Audio reactive (M)">🎙 Audio</button>
+    <button class="tbtn" id="btn-save" title="Save preset (S)">★ Save</button>
+    <button class="tbtn" id="btn-shot" title="Snapshot PNG (P)">Snapshot</button>
+    <button class="tbtn" id="btn-rec" title="Record WebM video (V)">● Record</button>
+    <button class="tbtn" id="btn-share" title="Copy share link (L)">Share</button>
+    <button class="tbtn" id="btn-nodes" title="Node graph (N)">⬡ Nodes</button>
+    <button class="tbtn" id="btn-random">⟳ Randomize</button>
+    <button class="tbtn" id="btn-reset">Reset</button>
+    <button class="tbtn" id="btn-import">Import</button>
+    <button class="tbtn primary" id="btn-export">Export code</button>
   </div>
 
-  <!-- install -->
-  <section>
-    <h2>Installation</h2>
-    <p class="lead">One file, no build step, no dependencies. Drop it in and it mounts itself.</p>
-    <div class="codebox">
-      <div class="codetabs" id="install-tabs"></div>
-      <div class="codebody">
-        <button class="copy" data-copy="install">Copy</button>
-        <pre id="install-code"></pre>
+  <div id="left">
+    <div class="side-head">Preset Library</div>
+    <input id="search" placeholder="Search presets…" spellcheck="false">
+    <div id="preset-list"></div>
+  </div>
+
+  <div id="view">
+    <canvas id="gl"></canvas>
+    <div id="level"></div>
+    <div id="dotstage">
+      <canvas id="dotmain"></canvas>
+      <div id="sizechips">
+        <span class="sclbl">Size</span>
+        <button class="schip" data-s="16">16</button>
+        <button class="schip" data-s="20">20</button>
+        <button class="schip" data-s="24">24</button>
+        <button class="schip" data-s="32">32</button>
+        <button class="schip" data-s="48">48</button>
+        <button class="schip active" data-s="120">120</button>
+        <button class="schip" data-s="200">200</button>
+        <input type="range" id="sizerange" min="14" max="260" value="120">
+        <span class="sval" id="sizeval">120px</span>
+      </div>
+      <div id="dotsizes">
+        <div class="dsz"><canvas data-size="16"></canvas><span>16</span></div>
+        <div class="dsz"><canvas data-size="20"></canvas><span>20</span></div>
+        <div class="dsz"><canvas data-size="28"></canvas><span>28</span></div>
+        <div class="dsz"><canvas data-size="40"></canvas><span>40</span></div>
+        <div class="dsz"><canvas data-size="64"></canvas><span>64</span></div>
+      </div>
+      <div id="dotctx">
+        <div class="bubble"><canvas data-size="18"></canvas><span>Thinking…</span></div>
       </div>
     </div>
-  </section>
-
-  <!-- playground -->
-  <section>
-    <h2>Playground</h2>
-    <p class="lead">Tune it live. The code below updates with your settings — copy it straight into your project.</p>
-    <div class="states" id="states"></div>
-    <div class="pg">
-      <div class="stage">
-        <canvas id="pg-main"></canvas>
-        <div class="sizes">
-          <figure><canvas class="pv" data-s="16"></canvas><figcaption>16</figcaption></figure>
-          <figure><canvas class="pv" data-s="20"></canvas><figcaption>20</figcaption></figure>
-          <figure><canvas class="pv" data-s="28"></canvas><figcaption>28</figcaption></figure>
-          <figure><canvas class="pv" data-s="40"></canvas><figcaption>40</figcaption></figure>
-          <figure><canvas class="pv" data-s="64"></canvas><figcaption>64</figcaption></figure>
-        </div>
-        <div class="chip">
-          <canvas class="pv" data-s="20"></canvas>
-          <span class="shim" id="chip-label">Agent working&hellip;</span>
-        </div>
-      </div>
-      <div class="panel" id="panel"></div>
+    <div id="preset-name"><div class="nm"></div><div class="ct"></div></div>
+    <div class="view-tools">
+      <button class="vbtn" id="btn-bg">Background</button>
+      <button class="vbtn" id="btn-cam">Reset camera</button>
     </div>
-  </section>
+    <div class="hud"><span><b id="fps">60</b> fps</span><span><b id="pcount">0</b> particles</span><span>drag to orbit · scroll to zoom · press ? for shortcuts</span></div>
+  </div>
 
-  <!-- generated code -->
-  <section>
-    <h2>Your orb</h2>
-    <p class="lead">Live output for the settings above.</p>
-    <div class="codebox">
-      <div class="codetabs" id="out-tabs"></div>
-      <div class="codebody">
-        <button class="copy" data-copy="out">Copy</button>
-        <pre id="out-code"></pre>
-      </div>
+  <div id="states">
+    <span class="lbl">AI State</span>
+  </div>
+
+  <div id="right"></div>
+</div>
+
+<div id="nodes-panel">
+  <div class="np-head">
+    <b>Node Graph</b>
+    <span class="np-hint">drag nodes · click port → port to connect · click a wire to cut</span>
+    <button class="np-x" id="nodes-close">✕</button>
+  </div>
+  <div class="np-canvas" id="np-canvas">
+    <svg id="np-wires"></svg>
+  </div>
+</div>
+<div id="toast"></div>
+<div id="modal">
+  <div class="modal-box">
+    <div class="modal-head"><h3 id="modal-title">Export</h3><button class="x" id="modal-close">✕</button></div>
+    <div class="tabs" id="modal-tabs"></div>
+    <div class="hint" id="modal-hint"></div>
+    <div class="code-wrap"><pre id="modal-code"></pre></div>
+    <div class="modal-foot">
+      <button class="tbtn primary" id="btn-copy">Copy to clipboard</button>
+      <button class="tbtn" id="btn-dl">Download file</button>
     </div>
-  </section>
+  </div>
+</div>
 
-  <!-- states reference -->
-  <section>
-    <h2>The six states</h2>
-    <p class="lead">Each one is a distinct mechanic, not a recoloured spinner.</p>
-    <div class="codebox"><div class="codebody"><pre id="states-doc"></pre></div></div>
-  </section>
-
-  <footer>
-    Zero dependencies &middot; MIT licensed &middot; canvas 2D, no WebGL<br>
-    Concept inspired by <a href="https://github.com/Jakubantalik/thinking-orbs" target="_blank" rel="noopener">thinking-orbs</a>
-    by Jakub Antalik &amp; Alex Brinza &middot; independent implementation
-  </footer>
-</main>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
-/* ==== orb-dots library (inlined) ==== */
-/*!
- * orb-dots v1.0.0 — dotted thought-orb loading indicators for AI & agent UIs
- * Zero dependencies · Canvas 2D · works in every modern browser
- * MIT License
- *
- * Concept inspired by "thinking-orbs" by Jakub Antalik & Alex Brinza.
- * This is an independent implementation.
- *
- *   <canvas data-orb="searching" data-size="24"></canvas>
- *   <script src="orb-dots.js"><\/script>          // auto-mounts [data-orb]
- *
- *   const orb = OrbDots.create(canvas, { state: 'thinking', size: 64 });
- *   orb.setState('solving'); orb.setSpeed(1.5); orb.pause(); orb.destroy();
- */
-(function (root, factory) {
-  if (typeof module === 'object' && module.exports) module.exports = factory();
-  else if (typeof define === 'function' && define.amd) define([], factory);
-  else root.OrbDots = factory();
-}(typeof self !== 'undefined' ? self : this, function () {
-'use strict';
+/* ============================================================
+   ORB STUDIO — parametric orb engine
+   ============================================================ */
 
-var DOT_CONFIG = {
-  "dotColor": "#ffffff",
-  "accent": "#64f0d2",
-  "useAccent": false,
-  "structure": "sphere",
-  "rings": 13,
-  "density": 22,
-  "rsPow": 0.5,
-  "tilt": 0.38,
-  "spin": 0.18,
-  "roll": -0.06,
-  "drift": 0.25,
-  "shimmer": 1,
-  "flicker": 0.45,
-  "dotPx": 0,
-  "cols": 13,
-  "dotScale": 0.78,
-  "gap": 1,
-  "hex": true,
-  "speed": 1,
-  "softness": 1,
-  "minAlpha": 0.06,
-  "glow": 0.35,
-  "jitter": 0,
-  "theme": "dark"
+const NOISE_GLSL = `
+vec3 mod289(vec3 x){return x-floor(x*(1.0/289.0))*289.0;}
+vec4 mod289(vec4 x){return x-floor(x*(1.0/289.0))*289.0;}
+vec4 permute(vec4 x){return mod289(((x*34.0)+1.0)*x);}
+vec4 taylorInvSqrt(vec4 r){return 1.79284291400159-0.85373472095314*r;}
+float snoise(vec3 v){
+  const vec2 C=vec2(1.0/6.0,1.0/3.0);const vec4 D=vec4(0.0,0.5,1.0,2.0);
+  vec3 i=floor(v+dot(v,C.yyy));vec3 x0=v-i+dot(i,C.xxx);
+  vec3 g=step(x0.yzx,x0.xyz);vec3 l=1.0-g;vec3 i1=min(g.xyz,l.zxy);vec3 i2=max(g.xyz,l.zxy);
+  vec3 x1=x0-i1+C.xxx;vec3 x2=x0-i2+C.yyy;vec3 x3=x0-D.yyy;
+  i=mod289(i);
+  vec4 p=permute(permute(permute(i.z+vec4(0.0,i1.z,i2.z,1.0))+i.y+vec4(0.0,i1.y,i2.y,1.0))+i.x+vec4(0.0,i1.x,i2.x,1.0));
+  float n_=0.142857142857;vec3 ns=n_*D.wyz-D.xzx;
+  vec4 j=p-49.0*floor(p*ns.z*ns.z);
+  vec4 x_=floor(j*ns.z);vec4 y_=floor(j-7.0*x_);
+  vec4 x=x_*ns.x+ns.yyyy;vec4 y=y_*ns.x+ns.yyyy;vec4 h=1.0-abs(x)-abs(y);
+  vec4 b0=vec4(x.xy,y.xy);vec4 b1=vec4(x.zw,y.zw);
+  vec4 s0=floor(b0)*2.0+1.0;vec4 s1=floor(b1)*2.0+1.0;vec4 sh=-step(h,vec4(0.0));
+  vec4 a0=b0.xzyw+s0.xzyw*sh.xxyy;vec4 a1=b1.xzyw+s1.xzyw*sh.zzww;
+  vec3 p0=vec3(a0.xy,h.x);vec3 p1=vec3(a0.zw,h.y);vec3 p2=vec3(a1.xy,h.z);vec3 p3=vec3(a1.zw,h.w);
+  vec4 norm=taylorInvSqrt(vec4(dot(p0,p0),dot(p1,p1),dot(p2,p2),dot(p3,p3)));
+  p0*=norm.x;p1*=norm.y;p2*=norm.z;p3*=norm.w;
+  vec4 m=max(0.6-vec4(dot(x0,x0),dot(x1,x1),dot(x2,x2),dot(x3,x3)),0.0);m=m*m;
+  return 42.0*dot(m*m,vec4(dot(p0,x0),dot(p1,x1),dot(p2,x2),dot(p3,x3)));
+}`;
+
+const BG_FRAG = NOISE_GLSL + `
+uniform vec3 uBgA,uBgB;uniform float uBgStars,uTime;varying vec2 vUv;
+void main(){
+  vec2 p=vUv-0.5;
+  float r=length(p*vec2(1.4,1.0));
+  vec3 col=mix(uBgA,uBgB,smoothstep(0.0,0.75,r));
+  if(uBgStars>0.01){
+    float n=snoise(vec3(vUv*160.0,uTime*0.05));
+    float st=smoothstep(0.86,1.0,n);
+    float tw=0.6+0.4*sin(uTime*2.0+n*30.0);
+    col+=vec3(st*tw*uBgStars);
+  }
+  gl_FragColor=vec4(col,1.0);
+}`;
+
+const ORB_VERT = NOISE_GLSL + `
+uniform float uTime,uDistortion,uNoiseScale,uFlowSpeed,uPulse,uScale;
+varying vec3 vNormal,vPos;varying float vNoise;
+void main(){
+  float t=uTime*uFlowSpeed;
+  float n=snoise(position*uNoiseScale+vec3(t*0.7,t*0.5,t*0.3));
+  float n2=snoise(position*uNoiseScale*2.4+vec3(-t*0.4,t*0.6,t*0.2))*0.4;
+  vNoise=n+n2;
+  vec3 p=position+normal*(vNoise*uDistortion);
+  p*=uScale*(1.0+uPulse);
+  vNormal=normalize(normalMatrix*normal);
+  vec4 mv=modelViewMatrix*vec4(p,1.0);
+  vPos=mv.xyz;
+  gl_Position=projectionMatrix*mv;
+}`;
+
+const ORB_FRAG = NOISE_GLSL + `
+uniform float uTime,uFresnelPow,uGlowIntensity,uOpacity,uMetal,uFlowSpeed,uNoiseScale;
+uniform float uRefract,uDispersion,uBgOn;
+uniform vec2 uRes;
+uniform sampler2D tBG;
+uniform vec3 uColorA,uColorB,uGlowColor;
+varying vec3 vNormal,vPos;varying float vNoise;
+void main(){
+  vec3 N=normalize(vNormal);
+  vec3 V=normalize(-vPos);
+  float fres=pow(1.0-abs(dot(N,V)),uFresnelPow);
+  float band=0.5+0.5*sin(vNoise*3.0+uTime*uFlowSpeed*1.5);
+  vec3 base=mix(uColorA,uColorB,clamp(band*0.7+N.y*0.35+0.15,0.0,1.0));
+  /* fake key light for metallic/matte shading */
+  vec3 L=normalize(vec3(0.6,0.8,0.5));
+  float diff=max(dot(N,L),0.0);
+  vec3 H=normalize(L+V);
+  float spec=pow(max(dot(N,H),0.0),mix(8.0,90.0,uMetal))*uMetal;
+  vec3 col=base*(0.35+diff*0.75)+vec3(spec)*1.2;
+  float alpha=clamp(uOpacity+fres*0.55,0.0,1.0);
+  /* screen-space refraction: bend the backdrop through the surface,
+     with chromatic dispersion (R/G/B bent by slightly different amounts) */
+  if(uRefract>0.001&&uBgOn>0.5){
+    vec2 suv=gl_FragCoord.xy/uRes;
+    vec3 rdir=refract(-V,N,0.72);
+    vec2 off=rdir.xy*uRefract*0.22;
+    float dsp=uDispersion*0.35;
+    vec3 rc;
+    rc.r=texture2D(tBG,clamp(suv+off*(1.0+dsp),0.001,0.999)).r;
+    rc.g=texture2D(tBG,clamp(suv+off,0.001,0.999)).g;
+    rc.b=texture2D(tBG,clamp(suv+off*(1.0-dsp),0.001,0.999)).b;
+    /* thin surfaces transmit more; rims stay reflective */
+    float trans=(1.0-alpha)*(1.0-fres*0.7);
+    col=mix(col,col*0.45+rc*1.15,clamp(trans*1.6,0.0,1.0));
+    alpha=clamp(alpha+dot(rc,vec3(.33))*trans*0.9,0.0,1.0);
+  }
+  col+=uGlowColor*fres*uGlowIntensity;
+  gl_FragColor=vec4(col,alpha);
+}`;
+
+const FLOW_GLSL = NOISE_GLSL + `
+uniform float uTime,uPSpeed,uPSize,uSpread,uFlat,uScale,uTrail;
+vec3 flowPos(float t,float aSeed,float aSeed2,float aRadius,out float heat){
+  float th=aSeed*6.28318 + t*(0.22+aSeed2*0.45);
+  float cph=2.0*fract(aSeed2*7.31)-1.0;
+  th  += snoise(vec3(aSeed*57.1, t*0.16, 1.7))*1.5;
+  cph += snoise(vec3(t*0.11, aSeed*31.7, 4.2))*0.4;
+  cph=clamp(cph,-0.999,0.999);
+  float ph=acos(cph);
+  float r=(1.05 + aRadius*uSpread + 0.05*sin(t*0.6+aSeed*40.0))*uScale;
+  vec3 p=vec3(cos(th)*sin(ph),cos(ph),sin(th)*sin(ph))*r;
+  p.y*=(1.0-uFlat*0.94);
+  heat=1.0-clamp((r/uScale-1.05)/(uSpread+0.06),0.0,1.0);
+  return p;
+}
+float lifeAt(float t,float aSeed,float aSeed2){
+  float life=fract(aSeed*13.73 + t*0.11*(0.4+aSeed2));
+  return smoothstep(0.0,0.18,life)*smoothstep(1.0,0.72,life);
+}
+float orbOcclusion(vec4 mv,mat4 mvMat){
+  vec4 cs=mvMat*vec4(0.0,0.0,0.0,1.0);
+  float R=uScale;
+  float d2=length(mv.xy-cs.xy);
+  float behind=step(mv.z,cs.z);
+  return 1.0-behind*(1.0-smoothstep(R*0.82,R*1.06,d2))*0.93;
+}`;
+
+const PART_VERT = FLOW_GLSL + `
+attribute float aSeed,aSeed2,aRadius,aSize;
+varying float vAlpha,vHeat;
+void main(){
+  float t=uTime*uPSpeed;
+  float lifeFade=lifeAt(t,aSeed,aSeed2);
+  float heat;
+  vec3 p=flowPos(t,aSeed,aSeed2,aRadius,heat);
+  vHeat=heat;
+  vec4 mv=modelViewMatrix*vec4(p,1.0);
+  vAlpha=lifeFade*orbOcclusion(mv,modelViewMatrix);
+  float sz=aSize*uPSize*(0.55+0.55*heat)*(62.0/-mv.z);
+  gl_PointSize=clamp(sz,1.0,44.0);
+  gl_Position=projectionMatrix*mv;
+}`;
+
+const PART_FRAG = `
+uniform vec3 uPColor,uPColor2;
+varying float vAlpha,vHeat;
+void main(){
+  float d=length(gl_PointCoord-0.5)*2.0;
+  float glow=exp(-d*d*4.0);
+  float core=exp(-d*d*26.0);
+  float a=(glow*0.5+core*0.95)*vAlpha;
+  if(a<0.008)discard;
+  vec3 col=mix(uPColor,uPColor2,vHeat*0.65)*(0.75+vHeat*0.65);
+  gl_FragColor=vec4(col,a);
+}`;
+
+/* trails: each particle gets a head+tail line segment; the tail vertex
+   evaluates the same flow field a moment in the past */
+const TRAIL_VERT = FLOW_GLSL + `
+attribute float aSeed,aSeed2,aRadius,aTail;
+varying float vAlpha,vHeat;
+void main(){
+  float t=uTime*uPSpeed;
+  float lifeFade=lifeAt(t,aSeed,aSeed2);
+  float heat;
+  vec3 p=flowPos(t-aTail*(0.05+uTrail*0.22),aSeed,aSeed2,aRadius,heat);
+  vHeat=heat;
+  vec4 mv=modelViewMatrix*vec4(p,1.0);
+  vAlpha=lifeFade*orbOcclusion(mv,modelViewMatrix)*(1.0-aTail*0.9)*clamp(uTrail*2.0,0.0,1.0);
+  gl_Position=projectionMatrix*mv;
+}`;
+
+const TRAIL_FRAG = `
+uniform vec3 uPColor,uPColor2;
+varying float vAlpha,vHeat;
+void main(){
+  if(vAlpha<0.012)discard;
+  vec3 col=mix(uPColor,uPColor2,vHeat*0.65)*(0.85+vHeat*0.6);
+  gl_FragColor=vec4(col,vAlpha*0.5);
+}`;
+
+/* ---------------- Parameter schema ---------------- */
+const SCHEMA = [
+  {id:'appearance',label:'Appearance',open:true,ctls:[
+    {k:'colorA',t:'color',l:'Color A'},
+    {k:'colorB',t:'color',l:'Color B'},
+    {k:'glowColor',t:'color',l:'Glow color'},
+    {k:'glowIntensity',t:'range',l:'Glow intensity',min:0,max:3,step:.01},
+    {k:'fresnelPow',t:'range',l:'Rim falloff',min:.5,max:8,step:.1},
+    {k:'metal',t:'range',l:'Metallic',min:0,max:1,step:.01},
+    {k:'opacity',t:'range',l:'Opacity',min:0,max:1,step:.01},
+    {k:'halo',t:'range',l:'Halo',min:0,max:2,step:.01},
+    {k:'refract',t:'range',l:'Refraction',min:0,max:1.5,step:.01},
+    {k:'dispersion',t:'range',l:'Dispersion',min:0,max:1,step:.01},
+    {k:'bloom',t:'range',l:'Bloom',min:0,max:2,step:.01},
+  ]},
+  {id:'env',label:'Environment',open:false,ctls:[
+    {k:'bgEnabled',t:'toggle',l:'Backdrop (enables refraction)'},
+    {k:'bgA',t:'color',l:'Sky'},
+    {k:'bgB',t:'color',l:'Horizon'},
+    {k:'bgStars',t:'range',l:'Stars',min:0,max:1.5,step:.01},
+  ]},
+  {id:'design',label:'Design Style',open:true,ctls:[
+    {k:'style',t:'select',l:'Mode',opts:[[0,'None'],[1,'Dither'],[2,'Halftone'],[3,'Posterize'],[4,'Pixel'],[5,'Scanline']]},
+    {k:'styleAmt',t:'range',l:'Amount',min:0,max:1,step:.01},
+    {k:'styleScale',t:'range',l:'Scale',min:.5,max:4,step:.05},
+    {k:'toneEnabled',t:'toggle',l:'Duotone'},
+    {k:'toneA',t:'color',l:'Tone light'},
+    {k:'toneB',t:'color',l:'Tone dark'},
+  ]},
+  {id:'shape',label:'Shape',open:true,ctls:[
+    {k:'scale',t:'range',l:'Radius',min:.4,max:1.6,step:.01},
+    {k:'distortion',t:'range',l:'Distortion',min:0,max:1.2,step:.01},
+    {k:'noiseScale',t:'range',l:'Noise scale',min:.3,max:6,step:.05},
+    {k:'lowPoly',t:'toggle',l:'Low poly'},
+    {k:'wireframe',t:'toggle',l:'Wireframe'},
+  ]},
+  {id:'motion',label:'Motion',open:true,ctls:[
+    {k:'flowSpeed',t:'range',l:'Flow speed',min:0,max:3,step:.01},
+    {k:'rotSpeed',t:'range',l:'Rotation',min:-2,max:2,step:.01},
+    {k:'pulseSpeed',t:'range',l:'Pulse speed',min:0,max:6,step:.05},
+    {k:'pulseAmp',t:'range',l:'Pulse amount',min:0,max:.35,step:.005},
+  ]},
+  {id:'particles',label:'Particles',open:true,ctls:[
+    {k:'pEnabled',t:'toggle',l:'Enabled'},
+    {k:'pColor',t:'color',l:'Color'},
+    {k:'pCount',t:'range',l:'Count',min:0,max:4000,step:10},
+    {k:'pSize',t:'range',l:'Size',min:.5,max:8,step:.1},
+    {k:'pSpeed',t:'range',l:'Orbit speed',min:0,max:3,step:.01},
+    {k:'pSpread',t:'range',l:'Spread',min:0,max:1.5,step:.01},
+    {k:'pFlat',t:'range',l:'Disc flatten',min:0,max:1,step:.01},
+    {k:'pTrail',t:'range',l:'Trails',min:0,max:1,step:.01},
+  ]},
+];
+
+const DEFAULTS = {
+  colorA:'#37d5fe',colorB:'#7b5bff',glowColor:'#6ae8ff',glowIntensity:1.1,
+  fresnelPow:2.6,metal:0,opacity:.92,halo:.8,bloom:.85,
+  refract:0,dispersion:.3,bgEnabled:false,bgA:'#141b2a',bgB:'#05070b',bgStars:.5,
+  style:0,styleAmt:1,styleScale:1,toneEnabled:false,toneA:'#e8ecf1',toneB:'#0a0c10',
+  scale:1,distortion:.28,noiseScale:1.6,lowPoly:false,wireframe:false,
+  flowSpeed:.7,rotSpeed:.25,pulseSpeed:1.4,pulseAmp:.03,
+  pEnabled:true,pTrail:0,pColor:'#8fd8ff',pCount:600,pSize:2.4,pSpeed:.5,pSpread:.5,pFlat:0,
 };
-var DOT_STATE_TINT = {"working":"#fbbf24","searching":"#5eb8ff","solving":"#a78bfa","composing":"#f472b6","shaping":"#4ade80","idle":null,"listening":"#64f0d2","thinking":"#a78bfa","processing":"#fbbf24","speaking":null,"success":"#4ade80","error":"#f87171","sleeping":"#64748b","loading":"#94a3b8"};
+/* ---------------- Preset library ---------------- */
+const P = (o)=>Object.assign({},DEFAULTS,o);
+const LIBRARY = [
+ {cat:'Core',items:[
+  ['Glow Orb',P({colorA:'#37d5fe',colorB:'#7b5bff',glowColor:'#6ae8ff',glowIntensity:1.4,distortion:.18,pCount:1100,pSize:1.7,pSpread:.45,pSpeed:.6})],
+  ['Glass Orb',P({refract:.85,dispersion:.45,bgEnabled:true,bloom:.4,colorA:'#bfe9ff',colorB:'#dff6ff',glowColor:'#ffffff',opacity:.18,glowIntensity:.9,fresnelPow:3.4,distortion:.06,metal:.5,pEnabled:false,halo:.35})],
+  ['Crystal Orb',P({refract:1.1,dispersion:.7,bgEnabled:true,colorA:'#a8f0ff',colorB:'#c9b6ff',glowColor:'#e0fbff',opacity:.4,lowPoly:true,distortion:.12,metal:.75,glowIntensity:1,flowSpeed:.25,pEnabled:false})],
+  ['Metallic Orb',P({bloom:.3,colorA:'#9aa7b8',colorB:'#3d4756',glowColor:'#cfe0f5',metal:1,opacity:1,glowIntensity:.35,distortion:.05,fresnelPow:4,pEnabled:false,halo:.2})],
+  ['Matte Orb',P({bloom:.15,colorA:'#e7a06b',colorB:'#b4562f',glowColor:'#ffd9b0',metal:.1,opacity:1,glowIntensity:.15,distortion:.08,fresnelPow:2,pEnabled:false,halo:.1})],
+ ]},
+ {cat:'Design',items:[
+  ['Dither Orb',P({style:1,toneEnabled:true,toneA:'#f2f5f8',toneB:'#0a0c10',colorA:'#cfd8e3',colorB:'#5a6472',glowColor:'#ffffff',glowIntensity:1.1,distortion:.32,noiseScale:1.6,flowSpeed:.6,bloom:.35,halo:.3,pEnabled:false})],
+  ['Duotone Dither',P({style:1,toneEnabled:true,toneA:'#64f0d2',toneB:'#07120f',colorA:'#8affe0',colorB:'#1a5e4e',glowColor:'#b8ffe8',glowIntensity:1.3,distortion:.45,noiseScale:1.4,flowSpeed:.8,bloom:.4,halo:.4,pEnabled:false})],
+  ['Halftone Orb',P({style:2,toneEnabled:true,toneA:'#f5f2ea',toneB:'#0c0d10',colorA:'#e0d8c9',colorB:'#6e675a',glowColor:'#fff8e8',glowIntensity:1,distortion:.25,flowSpeed:.5,bloom:.3,halo:.25,pEnabled:false})],
+  ['Minimal Orb',P({style:3,styleScale:2.2,colorA:'#f5c9a8',colorB:'#e07a5f',glowColor:'#ffe0c9',glowIntensity:.35,fresnelPow:1.8,opacity:1,distortion:.12,noiseScale:1,flowSpeed:.3,bloom:.2,halo:.15,pEnabled:false,metal:.05})],
+  ['Modern Gradient',P({colorA:'#ff8a7a',colorB:'#7a5bff',glowColor:'#ffb8a8',glowIntensity:.8,fresnelPow:1.9,opacity:1,distortion:.15,noiseScale:.8,flowSpeed:.35,bloom:.7,halo:.6,pEnabled:false})],
+  ['Pixel Orb',P({style:4,styleScale:1.4,colorA:'#5ee8c9',colorB:'#3a5ecf',glowColor:'#8af5e0',glowIntensity:1.2,distortion:.25,noiseScale:1.8,flowSpeed:.7,bloom:.5,pEnabled:false})],
+  ['Scanline Orb',P({style:5,styleScale:1.2,colorA:'#3aff9e',colorB:'#0a4e3a',glowColor:'#7affc9',glowIntensity:1.5,distortion:.3,noiseScale:2,flowSpeed:.9,bloom:.9,pColor:'#8affc9',pCount:400,pSize:1.4,pSpread:.5})],
+  ['Mono Grid',P({wireframe:true,colorA:'#e8ecf1',colorB:'#9aa4b8',glowColor:'#ffffff',glowIntensity:.7,opacity:.85,distortion:.12,noiseScale:1.4,flowSpeed:.4,bloom:.35,halo:.2,pEnabled:false})],
+ ]},
+ {cat:'Fluid',items:[
+  ['Liquid Orb',P({colorA:'#2fd4c0',colorB:'#0b6bd4',glowColor:'#7ff5e5',distortion:.55,noiseScale:1.2,flowSpeed:1.1,glowIntensity:.9,pEnabled:false})],
+  ['Mercury Orb',P({bloom:.35,colorA:'#e8edf5',colorB:'#6d7787',glowColor:'#ffffff',metal:1,opacity:1,distortion:.5,noiseScale:1,flowSpeed:.8,glowIntensity:.4,pEnabled:false,halo:.25})],
+  ['Ink Orb',P({colorA:'#141821',colorB:'#3c2c66',glowColor:'#7a5cff',opacity:1,distortion:.75,noiseScale:1.5,flowSpeed:.9,glowIntensity:.7,pEnabled:false})],
+  ['Water Orb',P({refract:.7,dispersion:.25,bgEnabled:true,colorA:'#5ec8ff',colorB:'#0a4ecf',glowColor:'#bfeaff',opacity:.55,distortion:.4,noiseScale:2.2,flowSpeed:1.3,fresnelPow:3,pEnabled:false})],
+  ['Gel Orb',P({refract:.5,dispersion:.3,bgEnabled:true,colorA:'#ff8ecf',colorB:'#ff4f9a',glowColor:'#ffc4e4',opacity:.6,distortion:.35,noiseScale:.9,flowSpeed:.6,pulseAmp:.08,pulseSpeed:1.8,pEnabled:false})],
+ ]},
+ {cat:'Energy',items:[
+  ['Plasma Orb',P({pTrail:.4,colorA:'#ff5db1',colorB:'#7b2ff7',glowColor:'#ff7ce0',glowIntensity:2,distortion:.6,noiseScale:2.6,flowSpeed:2,pColor:'#ff9be6',pCount:900,pSpeed:1.2,pSpread:.35})],
+  ['Energy Core',P({colorA:'#ffe36e',colorB:'#ff7a1a',glowColor:'#ffd24a',glowIntensity:2.2,distortion:.3,noiseScale:3,flowSpeed:1.6,pulseAmp:.07,pulseSpeed:3,pColor:'#ffcf6e',pCount:700,pSpread:.25})],
+  ['Lightning Orb',P({pTrail:.85,colorA:'#cfeaff',colorB:'#3b6bff',glowColor:'#9cc8ff',glowIntensity:2.4,distortion:.5,noiseScale:4.5,flowSpeed:2.8,pColor:'#dbeaff',pCount:300,pSize:1.6,pSpeed:2.4,pSpread:.6})],
+  ['Nuclear Orb',P({colorA:'#b8ff5e',colorB:'#1f9e3a',glowColor:'#d2ff7a',glowIntensity:2,distortion:.4,noiseScale:3.2,flowSpeed:1.8,pulseAmp:.06,pulseSpeed:4,pColor:'#c8ff8a',pCount:1000,pSpread:.5})],
+  ['Solar Orb',P({bloom:1.35,colorA:'#ffcf5e',colorB:'#ff5e1a',glowColor:'#ffb03a',glowIntensity:2.6,distortion:.35,noiseScale:2.8,flowSpeed:1.2,halo:1.6,pColor:'#ffd98a',pCount:800,pSpread:.9,pSpeed:.3})],
+ ]},
+ {cat:'Particle',items:[
+  ['Particle Cloud',P({opacity:0,glowIntensity:.4,distortion:0,pColor:'#9fd4ff',pCount:2600,pSize:2.2,pSpread:.9,pSpeed:.4,halo:.5,glowColor:'#9fd4ff'})],
+  ['Dust Orb',P({opacity:.06,colorA:'#3a3f4c',colorB:'#22262f',glowColor:'#c9a97a',glowIntensity:.5,pColor:'#e0c9a0',pCount:3200,pSize:1.2,pSpread:1.1,pSpeed:.2,halo:.4})],
+  ['Spark Orb',P({pTrail:.7,colorA:'#2b1a10',colorB:'#57230d',glowColor:'#ff9a3a',glowIntensity:1.4,opacity:.9,pColor:'#ffb75e',pCount:1400,pSize:1.8,pSpeed:1.8,pSpread:.8})],
+  ['Firefly Orb',P({colorA:'#0e2416',colorB:'#123a22',glowColor:'#b8ff8a',glowIntensity:1,opacity:.85,pColor:'#d6ff9e',pCount:500,pSize:3.4,pSpeed:.35,pSpread:1.2,halo:.7})],
+  ['Quantum Orb',P({pTrail:.5,colorA:'#1a1040',colorB:'#3c1a7a',glowColor:'#9a6bff',glowIntensity:1.6,opacity:.5,pColor:'#c9a8ff',pCount:2000,pSize:1.6,pSpeed:2.6,pSpread:.7,noiseScale:5,distortion:.25,flowSpeed:2.4})],
+ ]},
+ {cat:'Space',items:[
+  ['Galaxy Orb',P({bgEnabled:true,bgA:'#0e1030',bgB:'#03040a',bgStars:1.1,pTrail:.3,colorA:'#1b1440',colorB:'#4a1e8a',glowColor:'#b48aff',glowIntensity:1.2,opacity:.75,pColor:'#d8c8ff',pCount:3000,pSize:1.6,pSpread:1.3,pFlat:.85,pSpeed:.6,halo:1})],
+  ['Nebula Orb',P({colorA:'#ff6bd5',colorB:'#3a2ecf',glowColor:'#c86bff',glowIntensity:1.7,distortion:.65,noiseScale:1.4,flowSpeed:.5,opacity:.8,pColor:'#f0b8ff',pCount:1200,pSpread:.8})],
+  ['Planet Orb',P({colorA:'#4a9e6b',colorB:'#1a5e9e',glowColor:'#8ad4ff',glowIntensity:.7,opacity:1,distortion:.1,noiseScale:2.4,flowSpeed:.15,rotSpeed:.5,pColor:'#cfe8ff',pCount:600,pSpread:.4,pFlat:1,pSize:1.4})],
+  ['Black Hole',P({bloom:1.15,colorA:'#05060a',colorB:'#12080a',glowColor:'#ff7a2a',glowIntensity:1.8,fresnelPow:5.5,opacity:1,distortion:.05,pColor:'#ffb066',pCount:2400,pSpread:.55,pFlat:.92,pSpeed:1.6,pSize:1.6,halo:1.1})],
+  ['Supernova',P({pTrail:.5,bloom:1.5,colorA:'#fff1c9',colorB:'#ff8a3a',glowColor:'#ffde9e',glowIntensity:2.8,pulseAmp:.12,pulseSpeed:2.2,distortion:.45,noiseScale:3,flowSpeed:2,pColor:'#ffe9b8',pCount:2000,pSpeed:2,pSpread:1.4,halo:1.8})],
+ ]},
+ {cat:'Organic',items:[
+  ['Living Cell',P({colorA:'#8ee8b0',colorB:'#2f9e6e',glowColor:'#c0ffd8',opacity:.5,distortion:.4,noiseScale:.8,flowSpeed:.5,pulseAmp:.09,pulseSpeed:1.1,pColor:'#b8ffd4',pCount:350,pSpread:.15,pSize:3})],
+  ['Neural Orb',P({colorA:'#3ac9e8',colorB:'#1a4e9e',glowColor:'#7ae8ff',glowIntensity:1.5,wireframe:true,opacity:.9,distortion:.3,noiseScale:2,flowSpeed:1,pColor:'#9ae8ff',pCount:800,pSpread:.3,pSize:2})],
+  ['Bio-Lumen Orb',P({colorA:'#0a2e3a',colorB:'#0e5e6e',glowColor:'#4affd4',glowIntensity:2,opacity:.85,distortion:.35,noiseScale:1.8,flowSpeed:.6,pColor:'#8affe0',pCount:900,pSpread:.6})],
+  ['DNA Orb',P({colorA:'#5e8aff',colorB:'#b85eff',glowColor:'#9eb8ff',wireframe:true,glowIntensity:1.2,noiseScale:3.4,distortion:.2,flowSpeed:.8,rotSpeed:.9,pColor:'#c9d4ff',pCount:600,pSpread:.2})],
+  ['Amoeba Orb',P({colorA:'#d4e85e',colorB:'#6e9e1a',glowColor:'#e8ff8a',opacity:.65,distortion:.9,noiseScale:.7,flowSpeed:.7,pEnabled:false})],
+ ]},
+ {cat:'Atmospheric',items:[
+  ['Smoke Orb',P({colorA:'#2a2e38',colorB:'#565e6e',glowColor:'#9aa4b8',glowIntensity:.6,opacity:.45,distortion:.85,noiseScale:1.1,flowSpeed:.45,pEnabled:false,halo:.5})],
+  ['Fog Orb',P({bloom:.5,colorA:'#7f8ba0',colorB:'#c3ccd9',glowColor:'#e2e9f2',glowIntensity:.5,opacity:.25,distortion:.5,noiseScale:.8,flowSpeed:.3,fresnelPow:1.4,pEnabled:false,halo:.9})],
+  ['Cloud Orb',P({colorA:'#e8f0fa',colorB:'#9ab8d9',glowColor:'#ffffff',opacity:.55,distortion:.6,noiseScale:1.3,flowSpeed:.35,glowIntensity:.6,pEnabled:false})],
+  ['Aurora Orb',P({colorA:'#39ffb0',colorB:'#3a6bff',glowColor:'#6affd4',glowIntensity:1.8,opacity:.55,distortion:.5,noiseScale:1.6,flowSpeed:.8,pColor:'#a0ffe0',pCount:500,pSpread:.9,halo:1.2})],
+  ['Mist Orb',P({colorA:'#b8c9d9',colorB:'#6e7f96',glowColor:'#d9e6f2',opacity:.2,distortion:.4,noiseScale:.9,flowSpeed:.25,glowIntensity:.7,fresnelPow:1.6,pColor:'#dce8f5',pCount:700,pSize:3.5,pSpeed:.1,pSpread:1})],
+ ]},
+ {cat:'Geometric',items:[
+  ['Wireframe Orb',P({colorA:'#5ee8c9',colorB:'#1a9e8a',glowColor:'#8affe0',wireframe:true,glowIntensity:1.2,distortion:.15,noiseScale:2,pEnabled:false})],
+  ['Polygon Orb',P({colorA:'#ff8a5e',colorB:'#cf3a6e',glowColor:'#ffb08a',lowPoly:true,opacity:1,distortion:.2,noiseScale:1,flowSpeed:.4,metal:.3,pEnabled:false})],
+  ['Low Poly Orb',P({colorA:'#6ecfff',colorB:'#3a5ecf',glowColor:'#9edfff',lowPoly:true,opacity:1,distortion:.3,flowSpeed:.3,glowIntensity:.8,pEnabled:false})],
+  ['Crystal Mesh',P({colorA:'#c9f0ff',colorB:'#8a9eff',glowColor:'#e0f5ff',lowPoly:true,wireframe:true,glowIntensity:1.5,distortion:.25,noiseScale:1.2,pEnabled:false})],
+  ['Hex Grid Orb',P({colorA:'#ffd45e',colorB:'#cf7a1a',glowColor:'#ffe89e',wireframe:true,noiseScale:4,distortion:.1,glowIntensity:1.3,rotSpeed:.6,pEnabled:false})],
+ ]},
+ {cat:'Data & AI',items:[
+  ['Neural Network',P({colorA:'#3ae8ff',colorB:'#1a3acf',glowColor:'#6ef0ff',wireframe:true,glowIntensity:1.6,distortion:.28,noiseScale:2.6,flowSpeed:1.2,pColor:'#9ef4ff',pCount:1100,pSpread:.4,pSpeed:.9})],
+  ['Knowledge Graph',P({colorA:'#b88aff',colorB:'#5e3acf',glowColor:'#d4b8ff',wireframe:true,glowIntensity:1.3,noiseScale:1.8,distortion:.2,pColor:'#e0ccff',pCount:700,pSpread:.55,pSize:2.6})],
+  ['Data Stream',P({pTrail:.8,colorA:'#3aff9e',colorB:'#0a8a5e',glowColor:'#8affc9',glowIntensity:1.4,opacity:.7,noiseScale:5,distortion:.2,flowSpeed:2.6,pColor:'#b8ffd9',pCount:1600,pSpeed:2.8,pSpread:.6,pSize:1.4})],
+  ['Memory Orb',P({colorA:'#ffb8d9',colorB:'#8a5eff',glowColor:'#ffd4ec',glowIntensity:1.2,opacity:.6,distortion:.3,noiseScale:1.2,flowSpeed:.4,pulseAmp:.05,pulseSpeed:.8,pColor:'#ffe0f0',pCount:800,pSpread:.7})],
+  ['Intelligence Core',P({bloom:1.2,colorA:'#6ae8ff',colorB:'#3a3aff',glowColor:'#9ef0ff',glowIntensity:2,distortion:.4,noiseScale:2.2,flowSpeed:1.4,pulseAmp:.06,pulseSpeed:2.4,pColor:'#c9f4ff',pCount:1300,pSpeed:1.4,pSpread:.45,halo:1.3})],
+ ]},
+ {cat:'Abstract',items:[
+  ['Metaball Orb',P({colorA:'#ff6b9e',colorB:'#6b3aff',glowColor:'#ff9ec9',opacity:.9,distortion:1.1,noiseScale:.8,flowSpeed:.9,glowIntensity:1.1,pEnabled:false})],
+  ['Fractal Orb',P({colorA:'#e8d45e',colorB:'#cf3a9e',glowColor:'#ffe89e',noiseScale:6,distortion:.45,flowSpeed:.6,glowIntensity:1.2,opacity:.85,pEnabled:false})],
+  ['Morphing Orb',P({colorA:'#5effd4',colorB:'#3a8aff',glowColor:'#a0ffe8',distortion:1,noiseScale:1,flowSpeed:1.4,pulseAmp:.1,pulseSpeed:1.2,pEnabled:false})],
+  ['Vortex Orb',P({pTrail:.65,colorA:'#3a2e6e',colorB:'#8a3aff',glowColor:'#b88aff',glowIntensity:1.5,distortion:.5,noiseScale:2,flowSpeed:2.2,rotSpeed:1.8,pColor:'#d4b8ff',pCount:1800,pSpeed:2.4,pFlat:.6,pSpread:.8})],
+  ['Ripple Orb',P({colorA:'#5ec8ff',colorB:'#1a5ecf',glowColor:'#9edfff',noiseScale:4.2,distortion:.22,flowSpeed:1.8,pulseAmp:.04,pulseSpeed:3,pEnabled:false})],
+ ]},
+ {cat:'Audio Reactive',items:[
+  ['Voice Orb',P({colorA:'#6af0d2',colorB:'#3a6bff',glowColor:'#8af5e0',glowIntensity:1.6,distortion:.35,noiseScale:2,flowSpeed:1,pulseAmp:.14,pulseSpeed:4.5,pColor:'#b0fff0',pCount:700,pSpread:.5})],
+  ['Music Visualizer',P({pTrail:.45,colorA:'#ff5e9e',colorB:'#ffb03a',glowColor:'#ff8ac9',glowIntensity:1.8,distortion:.55,noiseScale:3.4,flowSpeed:2.2,pulseAmp:.12,pulseSpeed:5.2,pColor:'#ffcf9e',pCount:1200,pSpeed:1.8,pSpread:.7})],
+  ['Frequency Orb',P({colorA:'#9e5eff',colorB:'#3ae8ff',glowColor:'#c9a8ff',wireframe:true,glowIntensity:1.5,noiseScale:5,distortion:.35,flowSpeed:2.6,pulseAmp:.08,pulseSpeed:6,pEnabled:false})],
+  ['Beat Orb',P({colorA:'#ff3a5e',colorB:'#7a1a3a',glowColor:'#ff7a9e',glowIntensity:1.6,pulseAmp:.2,pulseSpeed:2.4,distortion:.25,noiseScale:1.6,pColor:'#ffa8bc',pCount:600,pSpread:.4})],
+ ]},
+ {cat:'Hybrid',items:[
+  ['Liquid Glass',P({refract:1,dispersion:.5,bgEnabled:true,colorA:'#bfe9ff',colorB:'#7ab8ff',glowColor:'#e0f5ff',opacity:.25,distortion:.5,noiseScale:1.1,flowSpeed:.9,fresnelPow:3.2,glowIntensity:1,metal:.4,pEnabled:false})],
+  ['Galaxy Particle',P({colorA:'#12102e',colorB:'#3a1a6e',glowColor:'#8a6bff',opacity:.5,glowIntensity:1.2,pColor:'#cfc0ff',pCount:3600,pSize:1.5,pSpread:1.2,pFlat:.7,pSpeed:.8,halo:1.1})],
+  ['Neural Plasma',P({colorA:'#ff5db1',colorB:'#3a3aff',glowColor:'#ff8ad4',wireframe:true,glowIntensity:2,distortion:.5,noiseScale:3,flowSpeed:2,pColor:'#ffb0e0',pCount:1000,pSpeed:1.6,pSpread:.5})],
+  ['Aurora Liquid',P({colorA:'#39ffb0',colorB:'#3a6bff',glowColor:'#7affd4',opacity:.6,distortion:.7,noiseScale:1.2,flowSpeed:1.1,glowIntensity:1.7,pColor:'#b0ffe4',pCount:400,pSpread:1,halo:1.2})],
+  ['Metal Plasma',P({colorA:'#c9d4e0',colorB:'#5e3acf',glowColor:'#b88aff',metal:.9,opacity:1,distortion:.45,noiseScale:2.4,flowSpeed:1.6,glowIntensity:1.2,pColor:'#d4c0ff',pCount:500,pSpread:.4})],
+ ]},
+];
 
+/* ---------------- AI states ---------------- */
+const STATES = {
+  idle:      {time:1,   pulseAmp:1,  pulseSpeed:1,  pSpeed:1,  glow:1,   tint:null},
+  listening: {time:1.1, pulseAmp:2.6,pulseSpeed:1.6,pSpeed:1.2,glow:1.25,tint:'#64f0d2',tintAmt:.35},
+  thinking:  {time:1.9, pulseAmp:1.4,pulseSpeed:2.4,pSpeed:1.8,glow:1.15,tint:'#8a6bff',tintAmt:.3},
+  searching: {time:2.4, pulseAmp:1.2,pulseSpeed:3,  pSpeed:2.6,glow:1.2, tint:'#5eb8ff',tintAmt:.3},
+  processing:{time:2.8, pulseAmp:1,  pulseSpeed:4,  pSpeed:3,  glow:1.3, tint:'#ffd45e',tintAmt:.25},
+  speaking:  {time:1.3, pulseAmp:3.4,pulseSpeed:3.2,pSpeed:1.3,glow:1.4, tint:null},
+  success:   {time:.8,  pulseAmp:2,  pulseSpeed:1.2,pSpeed:.8, glow:1.5, tint:'#5eff9e',tintAmt:.55},
+  error:     {time:1.6, pulseAmp:2.2,pulseSpeed:5,  pSpeed:1.6,glow:1.4, tint:'#ff5e6b',tintAmt:.6},
+  sleeping:  {time:.25, pulseAmp:1.6,pulseSpeed:.35,pSpeed:.2, glow:.45, tint:'#3a4a6e',tintAmt:.4},
+  loading:   {time:2,   pulseAmp:1.1,pulseSpeed:2.8,pSpeed:2.2,glow:1.1, tint:'#9aa4b8',tintAmt:.2},
+};
+/* ============================================================
+   Engine
+   ============================================================ */
+const canvas=document.getElementById('gl');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true,preserveDrawingBuffer:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(45,1,.1,100);
+camera.position.set(0,0,4.2);
+
+let params={...DEFAULTS};
+let currentPreset={cat:'Core',name:'Glow Orb'};
+let currentState='idle';
+let bgIndex=0;
+const BGS=[
+ ['radial-gradient(1200px 700px at 50% 42%, #0c1017 0%, #08090c 70%)'],
+ ['radial-gradient(1200px 700px at 50% 42%, #131022 0%, #070610 70%)'],
+ ['radial-gradient(1200px 700px at 50% 42%, #101816 0%, #060a09 70%)'],
+ ['radial-gradient(1200px 700px at 50% 45%, #f0f2f5 0%, #d8dde5 75%)'],
+];
+
+/* orb mesh */
+const uniforms={
+  uTime:{value:0},uDistortion:{value:0},uNoiseScale:{value:1},uFlowSpeed:{value:1},
+  uPulse:{value:0},uScale:{value:1},uFresnelPow:{value:2.6},uGlowIntensity:{value:1},
+  uOpacity:{value:.9},uMetal:{value:0},
+  uColorA:{value:new THREE.Color()},uColorB:{value:new THREE.Color()},uGlowColor:{value:new THREE.Color()},
+  uRefract:{value:0},uDispersion:{value:0},uBgOn:{value:0},
+  uRes:{value:new THREE.Vector2(1,1)},tBG:{value:null},
+};
+const orbMat=new THREE.ShaderMaterial({
+  vertexShader:ORB_VERT,fragmentShader:ORB_FRAG,uniforms,
+  transparent:true,depthWrite:false,side:THREE.DoubleSide});
+let orbGeo=new THREE.IcosahedronGeometry(1,5);
+let orb=new THREE.Mesh(orbGeo,orbMat);
+scene.add(orb);
+
+function rebuildGeo(){
+  orbGeo.dispose();
+  orbGeo=new THREE.IcosahedronGeometry(1,params.lowPoly?1:5);
+  orb.geometry=orbGeo;
+}
+
+/* halo sprite */
+function makeGlowTexture(){
+  const c=document.createElement('canvas');c.width=c.height=256;
+  const g=c.getContext('2d');
+  const grad=g.createRadialGradient(128,128,0,128,128,128);
+  grad.addColorStop(0,'rgba(255,255,255,.85)');
+  grad.addColorStop(.25,'rgba(255,255,255,.28)');
+  grad.addColorStop(.6,'rgba(255,255,255,.06)');
+  grad.addColorStop(1,'rgba(255,255,255,0)');
+  g.fillStyle=grad;g.fillRect(0,0,256,256);
+  return new THREE.CanvasTexture(c);
+}
+function makeCoreTexture(){
+  const c=document.createElement('canvas');c.width=c.height=256;
+  const g=c.getContext('2d');
+  const grad=g.createRadialGradient(128,128,0,128,128,128);
+  grad.addColorStop(0,'rgba(255,255,255,.9)');
+  grad.addColorStop(.35,'rgba(255,255,255,.22)');
+  grad.addColorStop(1,'rgba(255,255,255,0)');
+  g.fillStyle=grad;g.fillRect(0,0,256,256);
+  return new THREE.CanvasTexture(c);
+}
+const haloMat=new THREE.SpriteMaterial({map:makeGlowTexture(),transparent:true,
+  blending:THREE.AdditiveBlending,depthWrite:false,color:0xffffff,opacity:.5});
+const halo=new THREE.Sprite(haloMat);
+halo.scale.set(3.4,3.4,1);
+scene.add(halo);
+const halo2Mat=new THREE.SpriteMaterial({map:makeCoreTexture(),transparent:true,
+  blending:THREE.AdditiveBlending,depthWrite:false,color:0xffffff,opacity:.4});
+const halo2=new THREE.Sprite(halo2Mat);
+halo2.scale.set(2.3,2.3,1);
+scene.add(halo2);
+
+/* particles */
+const pUniforms={
+  uTime:{value:0},uPSpeed:{value:1},uPSize:{value:2},uSpread:{value:.5},
+  uFlat:{value:0},uScale:{value:1},uTrail:{value:0},uPColor:{value:new THREE.Color()},uPColor2:{value:new THREE.Color()},
+};
+const pMat=new THREE.ShaderMaterial({vertexShader:PART_VERT,fragmentShader:PART_FRAG,
+  uniforms:pUniforms,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending});
+const trailMat=new THREE.ShaderMaterial({vertexShader:TRAIL_VERT,fragmentShader:TRAIL_FRAG,
+  uniforms:pUniforms,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending});
+let points=null,trails=null;
+function rebuildParticles(){
+  if(points){scene.remove(points);points.geometry.dispose();}
+  const n=params.pEnabled?Math.round(params.pCount):0;
+  const geo=new THREE.BufferGeometry();
+  const pos=new Float32Array(n*3);
+  const seed=new Float32Array(n),seed2=new Float32Array(n),rad=new Float32Array(n),siz=new Float32Array(n);
+  for(let i=0;i<n;i++){seed[i]=Math.random();seed2[i]=Math.random();
+    rad[i]=Math.pow(Math.random(),1.4);
+    siz[i]=.4+Math.pow(Math.random(),3)*2.1;}      /* mostly fine dust, a few bright motes */
+  geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
+  geo.setAttribute('aSeed',new THREE.BufferAttribute(seed,1));
+  geo.setAttribute('aSeed2',new THREE.BufferAttribute(seed2,1));
+  geo.setAttribute('aRadius',new THREE.BufferAttribute(rad,1));
+  geo.setAttribute('aSize',new THREE.BufferAttribute(siz,1));
+  points=new THREE.Points(geo,pMat);
+  scene.add(points);
+  if(trails){scene.remove(trails);trails.geometry.dispose();}
+  const tg=new THREE.BufferGeometry();
+  const tp=new Float32Array(n*6),ts=new Float32Array(n*2),ts2=new Float32Array(n*2),
+        tr=new Float32Array(n*2),tt=new Float32Array(n*2);
+  for(let i=0;i<n;i++){
+    ts[2*i]=seed[i];ts[2*i+1]=seed[i];
+    ts2[2*i]=seed2[i];ts2[2*i+1]=seed2[i];
+    tr[2*i]=rad[i];tr[2*i+1]=rad[i];
+    tt[2*i]=0;tt[2*i+1]=1;
+  }
+  tg.setAttribute('position',new THREE.BufferAttribute(tp,3));
+  tg.setAttribute('aSeed',new THREE.BufferAttribute(ts,1));
+  tg.setAttribute('aSeed2',new THREE.BufferAttribute(ts2,1));
+  tg.setAttribute('aRadius',new THREE.BufferAttribute(tr,1));
+  tg.setAttribute('aTail',new THREE.BufferAttribute(tt,1));
+  trails=new THREE.LineSegments(tg,trailMat);
+  scene.add(trails);
+  document.getElementById('pcount').textContent=n;
+}
+rebuildParticles();
+
+/* backdrop: rendered separately so the style-mask stays sphere-only,
+   and so refraction has a real texture to bend */
+const bgScene=new THREE.Scene();
+const bgCam=new THREE.OrthographicCamera(-1,1,1,-1,0,1);
+const bgMat=new THREE.ShaderMaterial({
+  vertexShader:'varying vec2 vUv;void main(){vUv=uv;gl_Position=vec4(position.xy,0.,1.);}',
+  fragmentShader:BG_FRAG,depthTest:false,depthWrite:false,
+  uniforms:{uBgA:{value:new THREE.Color('#141b2a')},uBgB:{value:new THREE.Color('#05070b')},
+            uBgStars:{value:.5},uTime:{value:0}}});
+bgScene.add(new THREE.Mesh(new THREE.PlaneBufferGeometry(2,2),bgMat));
+let bgRT=null;
+
+/* audio reactivity */
+let audioOn=false,analyser=null,audioData=null,audioLevel=0,audioBass=0,micStream=null;
+async function toggleAudio(){
+  if(audioOn){
+    audioOn=false;
+    if(micStream)micStream.getTracks().forEach(t=>t.stop());
+    micStream=null;analyser=null;audioLevel=0;audioBass=0;
+    $('#btn-mic').classList.remove('on');$('#level').style.height='0px';
+    toast('Audio reactivity off');return;
+  }
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+    const ctx=new (window.AudioContext||window.webkitAudioContext)();
+    const srcNode=ctx.createMediaStreamSource(stream);
+    analyser=ctx.createAnalyser();analyser.fftSize=512;analyser.smoothingTimeConstant=.75;
+    srcNode.connect(analyser);
+    audioData=new Uint8Array(analyser.frequencyBinCount);
+    micStream=stream;audioOn=true;
+    $('#btn-mic').classList.add('on');
+    toast('Audio reactive — orb responds to your mic');
+  }catch(e){ toast('Microphone unavailable or permission denied'); }
+}
+function sampleAudio(){
+  if(!audioOn||!analyser)return;
+  analyser.getByteFrequencyData(audioData);
+  let bass=0,all=0;
+  const nb=Math.max(1,Math.floor(audioData.length*0.12));
+  for(let i=0;i<nb;i++)bass+=audioData[i];
+  for(let i=0;i<audioData.length;i++)all+=audioData[i];
+  const b=bass/nb/255, a=all/audioData.length/255;
+  audioBass+=(b-audioBass)*.35;
+  audioLevel+=(a-audioLevel)*.25;
+  $('#level').style.height=(audioLevel*120).toFixed(0)+'px';
+}
+
+/* camera orbit */
+let rotX=0,rotY=0,tRotX=0,tRotY=0,dist=4.2,tDist=4.2,dragging=false,px=0,py=0;
+canvas.addEventListener('pointerdown',e=>{dragging=true;px=e.clientX;py=e.clientY;});
+addEventListener('pointerup',()=>dragging=false);
+addEventListener('pointermove',e=>{if(!dragging)return;
+  tRotY+=(e.clientX-px)*.005;tRotX+=(e.clientY-py)*.005;
+  tRotX=Math.max(-1.3,Math.min(1.3,tRotX));px=e.clientX;py=e.clientY;});
+canvas.addEventListener('wheel',e=>{e.preventDefault();
+  tDist=Math.max(2,Math.min(9,tDist+e.deltaY*.003));},{passive:false});
+
+/* state machine (smoothed) */
+const mods={time:1,pulseAmp:1,pulseSpeed:1,pSpeed:1,glow:1,tint:new THREE.Color(1,1,1),tintAmt:0};
+function lerp(a,b,t){return a+(b-a)*t;}
+
+
+/* ---------- post-processing: two-level gaussian bloom ---------- */
+const POST_VERT=`varying vec2 vUv;void main(){vUv=uv;gl_Position=vec4(position.xy,0.,1.);}`;
+const BRIGHT_FRAG=`uniform sampler2D tDiffuse;uniform float uThreshold;varying vec2 vUv;
+void main(){vec4 c=texture2D(tDiffuse,vUv);vec3 col=c.rgb; /* RT is premultiplied */
+float l=dot(col,vec3(.2126,.7152,.0722));
+float f=smoothstep(uThreshold,uThreshold+.35,l);
+gl_FragColor=vec4(col*f,1.);}`;
+const BLUR_FRAG=`uniform sampler2D tDiffuse;uniform vec2 uDir;varying vec2 vUv;
+void main(){vec3 s=vec3(0.);
+s+=texture2D(tDiffuse,vUv-uDir*4.).rgb*.051;
+s+=texture2D(tDiffuse,vUv-uDir*3.).rgb*.0918;
+s+=texture2D(tDiffuse,vUv-uDir*2.).rgb*.1231;
+s+=texture2D(tDiffuse,vUv-uDir*1.).rgb*.1531;
+s+=texture2D(tDiffuse,vUv).rgb*.1633;
+s+=texture2D(tDiffuse,vUv+uDir*1.).rgb*.1531;
+s+=texture2D(tDiffuse,vUv+uDir*2.).rgb*.1231;
+s+=texture2D(tDiffuse,vUv+uDir*3.).rgb*.0918;
+s+=texture2D(tDiffuse,vUv+uDir*4.).rgb*.051;
+gl_FragColor=vec4(s,1.);}`;
+const COMP_FRAG=`
+uniform sampler2D tScene,tBloomA,tBloomB,tBG2;
+uniform float uStrength,uStyle,uStyleAmt,uStyleScale,uTone,uBgOn2;
+uniform vec2 uRes;
+uniform vec3 uToneA,uToneB;
+varying vec2 vUv;
+/* ordered Bayer dithering, array-free (WebGL1-safe) */
+float bayer2(vec2 a){a=floor(a);return fract(a.x/2.+a.y*a.y*.75);}
+float bayer4(vec2 a){return bayer2(.5*a)*.25+bayer2(a);}
+float bayer8(vec2 a){return bayer4(.5*a)*.25+bayer2(a);}
+void main(){
+  vec2 suv=vUv;
+  /* pixel mode: quantize sample position first */
+  if(uStyle>3.5&&uStyle<4.5){
+    float cov=texture2D(tScene,vUv).a;
+    if(cov>.01){
+      float px=6.*uStyleScale;
+      suv=(floor(vUv*uRes/px)+.5)*px/uRes;
+    }
+  }
+  vec4 base=texture2D(tScene,suv);
+  vec3 bl=(texture2D(tBloomA,suv).rgb+texture2D(tBloomB,suv).rgb*1.25)*uStrength;
+  bl=bl/(1.+bl*.35);
+  vec3 col=base.rgb+bl;
+  float bloomLum=dot(bl,vec3(.299,.587,.114));
+  float a=clamp(base.a+bloomLum,0.,1.);
+  /* coverage mask: style applies ONLY where the orb + its glow exist,
+     never to the empty background */
+  float mask=smoothstep(.02,.12,base.a+bloomLum);
+  vec3 styled=col;
+  float aS=a;
+  float lum=dot(col,vec3(.2126,.7152,.0722));
+  if(uStyle>.5&&uStyle<1.5){
+    /* DITHER: Bayer-8 threshold */
+    float b=bayer8(vUv*uRes/(1.5*uStyleScale));
+    float q=step(b,lum*1.15);
+    styled=(uTone>.5)?mix(uToneB,uToneA,q)
+                     :mix(vec3(0.),normalize(col+.0001)*1.5,q); /* hue-keeping dots */
+    aS=(uTone>.5)?q*.92:a*max(q,.12);
+  }else if(uStyle>1.5&&uStyle<2.5){
+    /* HALFTONE: rotated dot grid */
+    mat2 R=mat2(.7071,-.7071,.7071,.7071);
+    vec2 g=R*(vUv*uRes)/(9.*uStyleScale);
+    float d=length(fract(g)-.5);
+    float r=sqrt(clamp(lum*1.2,0.,1.))*.62;
+    float q=1.-smoothstep(max(r-.14,0.),max(r,.001),d);
+    styled=(uTone>.5)?mix(uToneB,uToneA,q):col*q*1.5;
+    aS=(uTone>.5)?q*.92:a*max(q,.1);
+  }else if(uStyle>2.5&&uStyle<3.5){
+    /* POSTERIZE: flat color bands */
+    float L=floor(2.+uStyleScale*2.);
+    styled=floor(col*L+.5)/L;
+    if(uTone>.5)styled=mix(uToneB,uToneA,floor(lum*L+.5)/L);
+  }else if(uStyle>4.5&&uStyle<5.5){
+    /* SCANLINE: CRT rows + slight chroma lift */
+    float sl=.8+.2*sin(vUv.y*uRes.y*3.14159/(1.6*uStyleScale));
+    styled=col*sl;
+    styled.g*=1.04;
+  }else if(uStyle>3.5&&uStyle<4.5){
+    /* PIXEL: quantized uv + posterize */
+    float L=5.;
+    styled=floor(col*L+.5)/L;
+  }
+  float w=uStyleAmt*mask;
+  col=mix(col,styled,w);
+  a=mix(a,aS,w);
+  if(uBgOn2>0.5){                      /* composite orb over the backdrop */
+    vec3 bg=texture2D(tBG2,vUv).rgb;
+    col=bg*(1.0-a)+col;
+    a=1.0;
+  }
+  gl_FragColor=vec4(col,a);
+}`;
+
+const postCam=new THREE.OrthographicCamera(-1,1,1,-1,0,1);
+const postScene=new THREE.Scene();
+const postQuad=new THREE.Mesh(new THREE.PlaneBufferGeometry(2,2));
+postScene.add(postQuad);
+const mkMat=(frag,unis)=>new THREE.ShaderMaterial({vertexShader:POST_VERT,fragmentShader:frag,
+  uniforms:unis,depthTest:false,depthWrite:false,transparent:false,blending:THREE.NoBlending});
+const brightMat=mkMat(BRIGHT_FRAG,{tDiffuse:{value:null},uThreshold:{value:.5}});
+const blurMat=mkMat(BLUR_FRAG,{tDiffuse:{value:null},uDir:{value:new THREE.Vector2()}});
+const compMat=mkMat(COMP_FRAG,{tScene:{value:null},tBloomA:{value:null},tBloomB:{value:null},
+  uStrength:{value:.85},uStyle:{value:0},uStyleAmt:{value:1},uStyleScale:{value:1},
+  uTone:{value:0},uRes:{value:new THREE.Vector2(1,1)},
+  uToneA:{value:new THREE.Color('#e8ecf1')},uToneB:{value:new THREE.Color('#0a0c10')},
+  tBG2:{value:null},uBgOn2:{value:0}});
+
+let sceneRT=null,rtH1,rtH2,rtQ1,rtQ2;
+function mkRT(w,h){return new THREE.WebGLRenderTarget(Math.max(2,w|0),Math.max(2,h|0),
+  {minFilter:THREE.LinearFilter,magFilter:THREE.LinearFilter,format:THREE.RGBAFormat});}
+function makeRTs(){
+  [sceneRT,rtH1,rtH2,rtQ1,rtQ2,bgRT].forEach(r=>r&&r.dispose());
+  const s=new THREE.Vector2();renderer.getDrawingBufferSize(s);
+  sceneRT=mkRT(s.x,s.y);
+  rtH1=mkRT(s.x/2,s.y/2);rtH2=mkRT(s.x/2,s.y/2);
+  rtQ1=mkRT(s.x/4,s.y/4);rtQ2=mkRT(s.x/4,s.y/4);
+  bgRT=mkRT(s.x,s.y);
+  compMat.uniforms.uRes.value.set(s.x,s.y);
+  uniforms.uRes.value.set(s.x,s.y);
+  uniforms.tBG.value=bgRT.texture;
+}
+function pass(mat,target){postQuad.material=mat;renderer.setRenderTarget(target);renderer.render(postScene,postCam);}
+function blur(a,b,w,h){
+  blurMat.uniforms.tDiffuse.value=a.texture;
+  blurMat.uniforms.uDir.value.set(1/w,0);pass(blurMat,b);
+  blurMat.uniforms.tDiffuse.value=b.texture;
+  blurMat.uniforms.uDir.value.set(0,1/h);pass(blurMat,a);
+}
+function renderFrame(){
+  const bgOn=!!params.bgEnabled;
+  if(bgOn&&bgRT){
+    bgMat.uniforms.uTime.value=simTime;
+    bgMat.uniforms.uBgA.value.set(params.bgA);
+    bgMat.uniforms.uBgB.value.set(params.bgB);
+    bgMat.uniforms.uBgStars.value=params.bgStars;
+    renderer.setRenderTarget(bgRT);renderer.render(bgScene,bgCam);
+  }
+  uniforms.uBgOn.value=bgOn?1:0;
+  uniforms.uRefract.value=params.refract;
+  uniforms.uDispersion.value=params.dispersion;
+  if((params.bloom<=0.01&&params.style===0&&!bgOn)||!sceneRT){
+    renderer.setRenderTarget(null);renderer.render(scene,camera);return;}
+  renderer.setRenderTarget(sceneRT);
+  renderer.setClearColor(0x000000,0);renderer.clear();
+  renderer.render(scene,camera);
+  brightMat.uniforms.tDiffuse.value=sceneRT.texture;
+  pass(brightMat,rtH1);
+  blur(rtH1,rtH2,rtH1.width,rtH1.height);
+  blur(rtH1,rtH2,rtH1.width,rtH1.height);
+  brightMat.uniforms.tDiffuse.value=sceneRT.texture;
+  pass(brightMat,rtQ1);
+  blur(rtQ1,rtQ2,rtQ1.width,rtQ1.height);
+  blur(rtQ1,rtQ2,rtQ1.width,rtQ1.height);
+  blur(rtQ1,rtQ2,rtQ1.width,rtQ1.height);
+  compMat.uniforms.tScene.value=sceneRT.texture;
+  compMat.uniforms.tBloomA.value=rtH1.texture;
+  compMat.uniforms.tBloomB.value=rtQ1.texture;
+  compMat.uniforms.uStrength.value=params.bloom*mods.glow;
+  compMat.uniforms.uStyle.value=params.style;
+  compMat.uniforms.uStyleAmt.value=params.styleAmt;
+  compMat.uniforms.uStyleScale.value=params.styleScale;
+  compMat.uniforms.uTone.value=params.toneEnabled?1:0;
+  compMat.uniforms.uToneA.value.set(params.toneA);
+  compMat.uniforms.uToneB.value.set(params.toneB);
+  compMat.uniforms.tBG2.value=bgRT?bgRT.texture:null;
+  compMat.uniforms.uBgOn2.value=bgOn?1:0;
+  renderer.setRenderTarget(null);
+  pass(compMat,null);
+}
+
+/* render loop */
+let simTime=0,last=performance.now(),fpsAcc=0,fpsN=0,fpsT=0;
+const cA=new THREE.Color(),cB=new THREE.Color(),cG=new THREE.Color(),cP=new THREE.Color();
+function frame(now){
+  requestAnimationFrame(frame);
+  if(typeof now!=='number'||!isFinite(now))return;
+  let dt=(now-last)/1000; if(!isFinite(dt))dt=0;
+  dt=Math.max(0,Math.min(dt,.05));last=now; /* clamp: no NaN on clock skew */
+  const S=STATES[currentState],k=1-Math.pow(.001,dt);
+  mods.time=lerp(mods.time,S.time,k);
+  mods.pulseAmp=lerp(mods.pulseAmp,S.pulseAmp,k);
+  mods.pulseSpeed=lerp(mods.pulseSpeed,S.pulseSpeed,k);
+  mods.pSpeed=lerp(mods.pSpeed,S.pSpeed,k);
+  mods.glow=lerp(mods.glow,S.glow,k);
+  const tgtAmt=S.tint?S.tintAmt:0;
+  mods.tintAmt=lerp(mods.tintAmt,tgtAmt,k);
+  if(S.tint)mods.tint.lerp(new THREE.Color(S.tint),k);
+
+  simTime+=dt*mods.time;
+  uniforms.uTime.value=simTime;
+  pUniforms.uTime.value=simTime;
+
+  cA.set(params.colorA).lerp(mods.tint,mods.tintAmt);
+  cB.set(params.colorB).lerp(mods.tint,mods.tintAmt);
+  cG.set(params.glowColor).lerp(mods.tint,mods.tintAmt);
+  cP.set(params.pColor).lerp(mods.tint,mods.tintAmt);
+  uniforms.uColorA.value.copy(cA);uniforms.uColorB.value.copy(cB);uniforms.uGlowColor.value.copy(cG);
+  pUniforms.uPColor.value.copy(cP);pUniforms.uPColor2.value.copy(cG);
+
+  uniforms.uDistortion.value=params.distortion;
+  uniforms.uNoiseScale.value=params.noiseScale;
+  uniforms.uFlowSpeed.value=params.flowSpeed;
+  uniforms.uScale.value=params.scale;
+  uniforms.uFresnelPow.value=params.fresnelPow;
+  uniforms.uGlowIntensity.value=params.glowIntensity*mods.glow;
+  uniforms.uOpacity.value=params.opacity;
+  uniforms.uMetal.value=params.metal;
+  /* node-graph gates: applied for this frame only, then restored,
+     so cutting a wire never destroys the user's slider values */
+  const gateSaved={};
+  for(const k in gateOverrides){gateSaved[k]=params[k];params[k]=gateOverrides[k];}
+  sampleAudio();
+  const aBoost=audioOn?1+audioLevel*1.9:1, aPulse=audioOn?audioBass*.26:0;
+  uniforms.uPulse.value=Math.sin(simTime*params.pulseSpeed*mods.pulseSpeed)*params.pulseAmp*mods.pulseAmp+aPulse;
+  uniforms.uGlowIntensity.value=params.glowIntensity*mods.glow*aBoost;
+  uniforms.uDistortion.value=params.distortion*(audioOn?1+audioLevel*.9:1);
+  orbMat.wireframe=params.wireframe;
+
+  pUniforms.uPSpeed.value=params.pSpeed*mods.pSpeed*(audioOn?1+audioLevel*1.4:1);
+  pUniforms.uPSize.value=params.pSize;
+  pUniforms.uSpread.value=params.pSpread;
+  pUniforms.uFlat.value=params.pFlat;
+  pUniforms.uScale.value=params.scale;
+  pUniforms.uTrail.value=params.pTrail;
+  if(trails){trails.visible=params.pEnabled&&params.pTrail>0.02;
+    trails.rotation.y=orb.rotation.y*.3;}
+
+  haloMat.color.copy(cG);halo2Mat.color.copy(cG);
+  const hb=params.halo*mods.glow;
+  haloMat.opacity=Math.min(.7,.16*hb+uniforms.uPulse.value*.25);
+  halo2Mat.opacity=Math.min(.75,.22*hb+uniforms.uPulse.value*.3);
+  halo.scale.setScalar(3.6*params.scale*Math.max(.3,hb)*(1+uniforms.uPulse.value*.6));
+  halo2.scale.setScalar(2.25*params.scale*(1+uniforms.uPulse.value));
+
+  orb.rotation.y+=dt*params.rotSpeed*mods.time;
+  if(points){points.rotation.y=orb.rotation.y*.3;points.visible=params.pEnabled;}
+
+  rotX=lerp(rotX,tRotX,k);rotY=lerp(rotY,tRotY,k);dist=lerp(dist,tDist,k);
+  camera.position.set(Math.sin(rotY)*Math.cos(rotX)*dist,Math.sin(rotX)*dist,Math.cos(rotY)*Math.cos(rotX)*dist);
+  camera.lookAt(0,0,0);
+
+  renderFrame();
+  for(const k in gateSaved)params[k]=gateSaved[k];
+  fpsAcc+=dt;fpsN++;fpsT+=dt;
+  if(fpsT>.5){document.getElementById('fps').textContent=Math.round(fpsN/fpsAcc);fpsAcc=0;fpsN=0;fpsT=0;}
+}
+function resize(){
+  const r=canvas.parentElement.getBoundingClientRect();
+  renderer.setSize(r.width,r.height,false);
+  makeRTs();
+  camera.aspect=r.width/r.height;camera.updateProjectionMatrix();
+}
+addEventListener('resize',resize);resize();
+requestAnimationFrame(frame);
+/* ============================================================
+   UI
+   ============================================================ */
+const $=s=>document.querySelector(s);
+
+/* ---- preset list ---- */
+const listEl=$('#preset-list');
+const userPresets=[];   /* session-scoped saved orbs */
+function savePreset(){
+  const base=currentPreset.name.replace(/ \d+$/,'');
+  let name=base, i=2;
+  while(userPresets.some(p=>p[0]===name)) name=base+' '+(i++);
+  userPresets.unshift([name,JSON.parse(JSON.stringify(params))]);
+  currentPreset={cat:'My Presets',name};
+  $('#preset-name .nm').textContent=name;
+  $('#preset-name .ct').textContent='My Presets';
+  renderLibrary($('#search').value);
+  toast('Saved "'+name+'" to My Presets');
+}
+function deletePreset(name){
+  const i=userPresets.findIndex(p=>p[0]===name);
+  if(i>-1){userPresets.splice(i,1);renderLibrary($('#search').value);toast('Deleted "'+name+'"');}
+}
+function renderLibrary(filter=''){
+  listEl.innerHTML='';
+  const f=filter.trim().toLowerCase();
+  const groups=userPresets.length?[{cat:'My Presets',items:userPresets,user:true},...LIBRARY]:LIBRARY;
+  groups.forEach((grp,gi)=>{
+    const items=grp.items.filter(([n])=>!f||n.toLowerCase().includes(f)||grp.cat.toLowerCase().includes(f));
+    if(!items.length)return;
+    const cat=document.createElement('div');
+    cat.className='cat'+((gi===0||f)?' open':'');
+    const head=document.createElement('button');
+    head.className='cat-head';
+    head.innerHTML=`${grp.cat}<span class="chev">▶</span>`;
+    head.onclick=()=>cat.classList.toggle('open');
+    cat.appendChild(head);
+    const wrap=document.createElement('div');wrap.className='cat-items';
+    items.forEach(([name,cfg])=>{
+      const b=document.createElement('button');
+      b.className='preset'+(currentPreset.name===name?' active':'');
+      b.innerHTML=`<span class="swatch" style="background:radial-gradient(circle at 35% 30%,${cfg.glowColor},${cfg.colorA} 55%,${cfg.colorB});--sw:${cfg.glowColor}66"></span>${name}`;
+      b.onclick=()=>applyPreset(grp.cat,name,cfg);
+      if(grp.user){
+        const d=document.createElement('span');
+        d.className='del';d.textContent='✕';d.title='Delete preset';
+        d.onclick=e=>{e.stopPropagation();deletePreset(name);};
+        b.appendChild(d);
+      }
+      wrap.appendChild(b);
+    });
+    cat.appendChild(wrap);
+    listEl.appendChild(cat);
+  });
+}
+/* ---- history ---- */
+const history={past:[],future:[]};
+let histTimer=null;
+function snapshot(){
+  const s=JSON.stringify(params);
+  if(history.past[history.past.length-1]===s)return;
+  history.past.push(s);
+  if(history.past.length>60)history.past.shift();
+  history.future.length=0;
+  updateHistBtns();
+}
+function pushDebounced(){clearTimeout(histTimer);histTimer=setTimeout(snapshot,420);}
+function updateHistBtns(){
+  $('#btn-undo').disabled=history.past.length<2;
+  $('#btn-redo').disabled=history.future.length===0;
+}
+function restore(json){
+  const cfg=JSON.parse(json);
+  const geo=params.lowPoly!==cfg.lowPoly;
+  const par=params.pCount!==cfg.pCount||params.pEnabled!==cfg.pEnabled;
+  params=cfg;
+  if(geo)rebuildGeo();
+  if(par)rebuildParticles();
+  renderInspector();
+}
+function undo(){
+  if(history.past.length<2)return;
+  history.future.push(history.past.pop());
+  restore(history.past[history.past.length-1]);
+  updateHistBtns();toast('Undo');
+}
+function redo(){
+  if(!history.future.length)return;
+  const s=history.future.pop();
+  history.past.push(s);restore(s);
+  updateHistBtns();toast('Redo');
+}
+
+function toast(msg){
+  const t=$('#toast');t.textContent=msg;t.classList.add('show');
+  clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove('show'),1900);
+}
+
+function applyPreset(cat,name,cfg){
+  currentPreset={cat,name};
+  const needGeo=params.lowPoly!==cfg.lowPoly;
+  const needP=params.pCount!==cfg.pCount||params.pEnabled!==cfg.pEnabled;
+  params={...cfg};
+  if(needGeo)rebuildGeo();
+  if(needP)rebuildParticles();
+  $('#preset-name .nm').textContent=name;
+  $('#preset-name .ct').textContent=cat;
+  renderLibrary($('#search').value);
+  renderInspector();
+  snapshot();
+}
+$('#search').addEventListener('input',e=>renderLibraryFor(mode));
+
+/* ---- inspector ---- */
+const rightEl=$('#right');
+function fmt(v){return typeof v==='number'?(Math.abs(v)>=100?Math.round(v):+v.toFixed(2)):v;}
+function renderInspector(){
+  rightEl.innerHTML='';
+  SCHEMA.forEach(sec=>{
+    const s=document.createElement('div');
+    s.className='insp-sec'+(sec.open?' open':'');
+    const h=document.createElement('button');
+    h.className='insp-head';h.innerHTML=`${sec.label}<span class="chev">▶</span>`;
+    h.onclick=()=>s.classList.toggle('open');
+    s.appendChild(h);
+    const body=document.createElement('div');body.className='insp-body';
+    sec.ctls.forEach(c=>{
+      if(c.t==='range'){
+        const d=document.createElement('div');d.className='ctl';
+        d.innerHTML=`<div class="ctl-row"><span class="ctl-lbl">${c.l}</span><span class="ctl-val">${fmt(params[c.k])}</span></div>`;
+        const r=document.createElement('input');
+        r.type='range';r.min=c.min;r.max=c.max;r.step=c.step;r.value=params[c.k];
+        r.addEventListener('input',()=>{
+          params[c.k]=+r.value;
+          d.querySelector('.ctl-val').textContent=fmt(params[c.k]);
+          if(c.k==='pCount')rebuildParticles();
+          pushDebounced();
+        });
+        d.appendChild(r);body.appendChild(d);
+      }else if(c.t==='color'){
+        const d=document.createElement('div');d.className='color-ctl';
+        d.innerHTML=`<span class="ctl-lbl">${c.l}</span>`;
+        const inp=document.createElement('input');inp.type='color';inp.value=params[c.k];
+        inp.addEventListener('input',()=>{params[c.k]=inp.value;pushDebounced();});
+        d.appendChild(inp);body.appendChild(d);
+      }else if(c.t==='select'){
+        const d=document.createElement('div');d.className='color-ctl';
+        d.innerHTML=`<span class="ctl-lbl">${c.l}</span>`;
+        const s2=document.createElement('select');s2.className='sel';
+        c.opts.forEach(([v,l])=>{const o=document.createElement('option');
+          o.value=v;o.textContent=l;if(params[c.k]===v)o.selected=true;s2.appendChild(o);});
+        s2.addEventListener('change',()=>{params[c.k]=+s2.value;snapshot();});
+        d.appendChild(s2);body.appendChild(d);
+      }else if(c.t==='toggle'){
+        const d=document.createElement('div');d.className='toggle-ctl';
+        d.innerHTML=`<span class="ctl-lbl">${c.l}</span>`;
+        const t=document.createElement('button');
+        t.className='tog'+(params[c.k]?' on':'');
+        t.onclick=()=>{params[c.k]=!params[c.k];t.classList.toggle('on');
+          if(c.k==='lowPoly')rebuildGeo();
+          if(c.k==='pEnabled')rebuildParticles();snapshot();};
+        d.appendChild(t);body.appendChild(d);
+      }
+    });
+    s.appendChild(body);
+    rightEl.appendChild(s);
+  });
+}
+
+/* ---- states ---- */
+const statesEl=$('#states');
+Object.keys(STATES).forEach(st=>{
+  const b=document.createElement('button');
+  b.className='state'+(st===currentState?' active':'');
+  b.textContent=st[0].toUpperCase()+st.slice(1);
+  b.onclick=()=>{currentState=st;
+    statesEl.querySelectorAll('.state').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');};
+  statesEl.appendChild(b);
+});
+
+/* ---- toolbar ---- */
+$('#btn-reset').onclick=()=>{
+  for(const g of LIBRARY)for(const [n,c] of g.items)
+    if(n===currentPreset.name)return applyPreset(g.cat,n,c);
+};
+$('#btn-random').onclick=()=>{
+  const rnd=(a,b)=>a+Math.random()*(b-a);
+  const hex=()=>'#'+new THREE.Color().setHSL(Math.random(),rnd(.55,.95),rnd(.45,.72)).getHexString();
+  const cfg=P({colorA:hex(),colorB:hex(),glowColor:hex(),pColor:hex(),
+    glowIntensity:rnd(.4,2.2),fresnelPow:rnd(1.2,5),metal:Math.random()<.25?rnd(.4,1):0,
+    opacity:rnd(.3,1),halo:rnd(.3,1.4),distortion:rnd(.05,.9),noiseScale:rnd(.6,4.5),
+    lowPoly:Math.random()<.15,wireframe:Math.random()<.18,
+    flowSpeed:rnd(.2,2),rotSpeed:rnd(-.8,.8),pulseSpeed:rnd(.5,4),pulseAmp:rnd(0,.1),
+    pEnabled:Math.random()<.75,pCount:Math.round(rnd(200,2600)),pSize:rnd(1,4),
+    pSpeed:rnd(.1,2),pSpread:rnd(.1,1.2),pFlat:Math.random()<.3?rnd(.5,1):0});
+  applyPreset('Custom','Random Orb',cfg);
+};
+$('#btn-bg').onclick=()=>{bgIndex=(bgIndex+1)%BGS.length;$('#view').style.background=BGS[bgIndex][0];};
+$('#btn-undo').onclick=undo;
+$('#btn-redo').onclick=redo;
+$('#btn-save').onclick=savePreset;
+$('#btn-shot').onclick=snapshotPNG;
+$('#btn-mic').onclick=toggleAudio;
+$('#btn-share').onclick=shareLink;
+$('#btn-rec').onclick=toggleRecord;
+$('#btn-cam').onclick=()=>{tRotX=0;tRotY=0;tDist=4.2;};
+
+/* ---- export: complete standalone engine ---- */
+const TABS=['Config JSON','orb-engine.js','React','HTML demo','Import'];
+let activeTab=0;
+function cfgJSON(){return JSON.stringify(params,null,2);}
+const sh=s=>'`'+s+'`';
+
+function engineSource(mode){ /* mode: 'module' | 'bare' | 'global' */
+  const head=mode==='module'?'import * as THREE from "three";\n\n':'';
+  const foot=mode==='module'
+    ?'\nexport { Orb, ORB_CONFIG, ORB_STATES };\n'
+    :(mode==='global'?'\nwindow.Orb=Orb;window.ORB_CONFIG=ORB_CONFIG;window.ORB_STATES=ORB_STATES;\n':'\n');
+  return head+`/* ── Orb Studio engine ── generated ${new Date().toISOString().slice(0,10)}
+   Complete standalone runtime with full visual parity to the playground:
+   shader orb, flow-field particles + trails, dual halo, bloom + design-style
+   post pass, occlusion, and the 10-state AI machine.
+   Usage:
+     const orb = new Orb(canvasEl);            // uses ORB_CONFIG
+     orb.setState('thinking');                 // idle|listening|thinking|searching|
+                                               // processing|speaking|success|error|sleeping|loading
+     orb.set({ glowIntensity: 2 });            // live-update any config key
+     orb.dispose();                            // full cleanup                     */
+
+const ORB_CONFIG = ${cfgJSON()};
+
+const ORB_STATES = ${JSON.stringify(STATES,null,1)};
+
+const F_BG=${sh(BG_FRAG)};
+const V_ORB=${sh(ORB_VERT)};
+const F_ORB=${sh(ORB_FRAG)};
+const V_PART=${sh(PART_VERT)};
+const F_PART=${sh(PART_FRAG)};
+const V_TRAIL=${sh(TRAIL_VERT)};
+const F_TRAIL=${sh(TRAIL_FRAG)};
+const V_POST=${sh(POST_VERT)};
+const F_BRIGHT=${sh(BRIGHT_FRAG)};
+const F_BLUR=${sh(BLUR_FRAG)};
+const F_COMP=${sh(COMP_FRAG)};
+
+class Orb {
+  constructor(canvas, config) {
+    this.cfg = Object.assign({}, ORB_CONFIG, config || {});
+    this.state = 'idle';
+    this.canvas = canvas;
+    var r = this.renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
+    r.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    this.scene = new THREE.Scene();
+    this.camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+    this.camera.position.set(0, 0, 4.2);
+    this.u = { uTime:{value:0},uDistortion:{value:0},uNoiseScale:{value:1},uFlowSpeed:{value:1},
+      uPulse:{value:0},uScale:{value:1},uFresnelPow:{value:2.6},uGlowIntensity:{value:1},
+      uOpacity:{value:.9},uMetal:{value:0},uColorA:{value:new THREE.Color()},
+      uColorB:{value:new THREE.Color()},uGlowColor:{value:new THREE.Color()},
+      uRefract:{value:0},uDispersion:{value:0},uBgOn:{value:0},
+      uRes:{value:new THREE.Vector2(1,1)},tBG:{value:null} };
+    this.orbMat = new THREE.ShaderMaterial({ vertexShader:V_ORB, fragmentShader:F_ORB,
+      uniforms:this.u, transparent:true, depthWrite:false, side:THREE.DoubleSide });
+    this.orb = new THREE.Mesh(new THREE.IcosahedronGeometry(1, this.cfg.lowPoly?1:5), this.orbMat);
+    this.scene.add(this.orb);
+    this.haloMat = new THREE.SpriteMaterial({ map:this._tex(.25,.6), transparent:true,
+      blending:THREE.AdditiveBlending, depthWrite:false, opacity:.5 });
+    this.halo = new THREE.Sprite(this.haloMat); this.scene.add(this.halo);
+    this.halo2Mat = new THREE.SpriteMaterial({ map:this._tex(.35,1), transparent:true,
+      blending:THREE.AdditiveBlending, depthWrite:false, opacity:.4 });
+    this.halo2 = new THREE.Sprite(this.halo2Mat); this.scene.add(this.halo2);
+    this.pu = { uTime:{value:0},uPSpeed:{value:1},uPSize:{value:2},uSpread:{value:.5},
+      uFlat:{value:0},uScale:{value:1},uTrail:{value:0},
+      uPColor:{value:new THREE.Color()},uPColor2:{value:new THREE.Color()} };
+    this.pMat = new THREE.ShaderMaterial({ vertexShader:V_PART, fragmentShader:F_PART,
+      uniforms:this.pu, transparent:true, depthWrite:false, blending:THREE.AdditiveBlending });
+    this.tMat = new THREE.ShaderMaterial({ vertexShader:V_TRAIL, fragmentShader:F_TRAIL,
+      uniforms:this.pu, transparent:true, depthWrite:false, blending:THREE.AdditiveBlending });
+    this.points=null; this.trails=null;
+    this._particles();
+    this.bgScene=new THREE.Scene();
+    this.bgCam=new THREE.OrthographicCamera(-1,1,1,-1,0,1);
+    this.bgMat=new THREE.ShaderMaterial({
+      vertexShader:'varying vec2 vUv;void main(){vUv=uv;gl_Position=vec4(position.xy,0.,1.);}',
+      fragmentShader:F_BG,depthTest:false,depthWrite:false,
+      uniforms:{uBgA:{value:new THREE.Color('#141b2a')},uBgB:{value:new THREE.Color('#05070b')},
+                uBgStars:{value:.5},uTime:{value:0}}});
+    this.bgScene.add(new THREE.Mesh(new THREE.PlaneBufferGeometry(2,2),this.bgMat));
+    this.postCam=new THREE.OrthographicCamera(-1,1,1,-1,0,1);
+    this.postScene=new THREE.Scene();
+    this.postQuad=new THREE.Mesh(new THREE.PlaneBufferGeometry(2,2));
+    this.postScene.add(this.postQuad);
+    var mk=function(f,un){return new THREE.ShaderMaterial({vertexShader:V_POST,fragmentShader:f,
+      uniforms:un,depthTest:false,depthWrite:false,blending:THREE.NoBlending});};
+    this.brightMat=mk(F_BRIGHT,{tDiffuse:{value:null},uThreshold:{value:.5}});
+    this.blurMat=mk(F_BLUR,{tDiffuse:{value:null},uDir:{value:new THREE.Vector2()}});
+    this.compMat=mk(F_COMP,{tScene:{value:null},tBloomA:{value:null},tBloomB:{value:null},
+      uStrength:{value:.85},uStyle:{value:0},uStyleAmt:{value:1},uStyleScale:{value:1},
+      uTone:{value:0},uRes:{value:new THREE.Vector2(1,1)},
+      uToneA:{value:new THREE.Color('#ffffff')},uToneB:{value:new THREE.Color('#000000')},
+      tBG2:{value:null},uBgOn2:{value:0}});
+    this.rt=null;
+    this.mods={time:1,pulseAmp:1,pulseSpeed:1,pSpeed:1,glow:1,tint:new THREE.Color(1,1,1),tintAmt:0};
+    this.simTime=0; this._w=0; this._h=0; this._last=performance.now();
+    this._cA=new THREE.Color();this._cB=new THREE.Color();
+    this._cG=new THREE.Color();this._cP=new THREE.Color();
+    var self=this;
+    this._loop=function(now){ self._raf=requestAnimationFrame(self._loop); self._frame(now); };
+    this._raf=requestAnimationFrame(this._loop);
+  }
+  setState(s){ if(ORB_STATES[s]) this.state=s; }
+  set(patch){
+    Object.assign(this.cfg, patch);
+    if(patch.pCount!==undefined||patch.pEnabled!==undefined) this._particles();
+    if(patch.lowPoly!==undefined){
+      this.orb.geometry.dispose();
+      this.orb.geometry=new THREE.IcosahedronGeometry(1,this.cfg.lowPoly?1:5);
+    }
+  }
+  dispose(){
+    cancelAnimationFrame(this._raf);
+    this.orb.geometry.dispose(); this.orbMat.dispose();
+    if(this.points){this.points.geometry.dispose();}
+    if(this.trails){this.trails.geometry.dispose();}
+    this.pMat.dispose(); this.tMat.dispose();
+    if(this.rt) this.rt.forEach(function(t){t.dispose();});
+    this.renderer.dispose();
+  }
+  _tex(m,e){
+    var c=document.createElement('canvas');c.width=c.height=256;
+    var g=c.getContext('2d');
+    var gr=g.createRadialGradient(128,128,0,128,128,128);
+    gr.addColorStop(0,'rgba(255,255,255,.9)');
+    gr.addColorStop(m,'rgba(255,255,255,.24)');
+    gr.addColorStop(Math.min(e,.99),'rgba(255,255,255,.05)');
+    gr.addColorStop(1,'rgba(255,255,255,0)');
+    g.fillStyle=gr;g.fillRect(0,0,256,256);
+    return new THREE.CanvasTexture(c);
+  }
+  _particles(){
+    var c=this.cfg;
+    if(this.points){this.scene.remove(this.points);this.points.geometry.dispose();}
+    if(this.trails){this.scene.remove(this.trails);this.trails.geometry.dispose();}
+    var n=c.pEnabled?Math.round(c.pCount):0;
+    var seed=new Float32Array(n),seed2=new Float32Array(n),
+        rad=new Float32Array(n),siz=new Float32Array(n);
+    for(var i=0;i<n;i++){seed[i]=Math.random();seed2[i]=Math.random();
+      rad[i]=Math.pow(Math.random(),1.4);siz[i]=.4+Math.pow(Math.random(),3)*2.1;}
+    var geo=new THREE.BufferGeometry();
+    geo.setAttribute('position',new THREE.BufferAttribute(new Float32Array(n*3),3));
+    geo.setAttribute('aSeed',new THREE.BufferAttribute(seed,1));
+    geo.setAttribute('aSeed2',new THREE.BufferAttribute(seed2,1));
+    geo.setAttribute('aRadius',new THREE.BufferAttribute(rad,1));
+    geo.setAttribute('aSize',new THREE.BufferAttribute(siz,1));
+    this.points=new THREE.Points(geo,this.pMat);
+    this.scene.add(this.points);
+    var tg=new THREE.BufferGeometry();
+    var ts=new Float32Array(n*2),ts2=new Float32Array(n*2),
+        tr=new Float32Array(n*2),tt=new Float32Array(n*2);
+    for(var j=0;j<n;j++){
+      ts[2*j]=seed[j];ts[2*j+1]=seed[j];
+      ts2[2*j]=seed2[j];ts2[2*j+1]=seed2[j];
+      tr[2*j]=rad[j];tr[2*j+1]=rad[j];
+      tt[2*j]=0;tt[2*j+1]=1;
+    }
+    tg.setAttribute('position',new THREE.BufferAttribute(new Float32Array(n*6),3));
+    tg.setAttribute('aSeed',new THREE.BufferAttribute(ts,1));
+    tg.setAttribute('aSeed2',new THREE.BufferAttribute(ts2,1));
+    tg.setAttribute('aRadius',new THREE.BufferAttribute(tr,1));
+    tg.setAttribute('aTail',new THREE.BufferAttribute(tt,1));
+    this.trails=new THREE.LineSegments(tg,this.tMat);
+    this.scene.add(this.trails);
+  }
+  _resize(w,h){
+    this._w=w;this._h=h;
+    this.renderer.setSize(w,h,false);
+    this.camera.aspect=w/h;this.camera.updateProjectionMatrix();
+    if(this.rt)this.rt.forEach(function(t){t.dispose();});
+    var s=new THREE.Vector2();this.renderer.getDrawingBufferSize(s);
+    var mk=function(x,y){return new THREE.WebGLRenderTarget(Math.max(2,x|0),Math.max(2,y|0),
+      {minFilter:THREE.LinearFilter,magFilter:THREE.LinearFilter,format:THREE.RGBAFormat});};
+    this.rt=[mk(s.x,s.y),mk(s.x/2,s.y/2),mk(s.x/2,s.y/2),mk(s.x/4,s.y/4),mk(s.x/4,s.y/4),mk(s.x,s.y)];
+    this.compMat.uniforms.uRes.value.set(s.x,s.y);
+    this.u.uRes.value.set(s.x,s.y);
+    this.u.tBG.value=this.rt[5].texture;
+  }
+  _pass(m,t){this.postQuad.material=m;this.renderer.setRenderTarget(t);
+    this.renderer.render(this.postScene,this.postCam);}
+  _blur(a,b){
+    this.blurMat.uniforms.tDiffuse.value=a.texture;
+    this.blurMat.uniforms.uDir.value.set(1/a.width,0);this._pass(this.blurMat,b);
+    this.blurMat.uniforms.tDiffuse.value=b.texture;
+    this.blurMat.uniforms.uDir.value.set(0,1/a.height);this._pass(this.blurMat,a);
+  }
+  _frame(now){
+    var cw=this.canvas.clientWidth||300, ch=this.canvas.clientHeight||300;
+    if(cw!==this._w||ch!==this._h)this._resize(cw,ch);
+    if(typeof now!=='number'||!isFinite(now))return;
+    var dt=(now-this._last)/1000; if(!isFinite(dt))dt=0;
+    dt=Math.max(0,Math.min(dt,.05));this._last=now;
+    var c=this.cfg, S=ORB_STATES[this.state], M=this.mods;
+    var k=1-Math.pow(.001,dt);
+    M.time+=(S.time-M.time)*k; M.pulseAmp+=(S.pulseAmp-M.pulseAmp)*k;
+    M.pulseSpeed+=(S.pulseSpeed-M.pulseSpeed)*k; M.pSpeed+=(S.pSpeed-M.pSpeed)*k;
+    M.glow+=(S.glow-M.glow)*k;
+    M.tintAmt+=((S.tint?S.tintAmt:0)-M.tintAmt)*k;
+    if(S.tint)M.tint.lerp(new THREE.Color(S.tint),k);
+    this.simTime+=dt*M.time;
+    var u=this.u,pu=this.pu;
+    u.uTime.value=this.simTime; pu.uTime.value=this.simTime;
+    this._cA.set(c.colorA).lerp(M.tint,M.tintAmt);
+    this._cB.set(c.colorB).lerp(M.tint,M.tintAmt);
+    this._cG.set(c.glowColor).lerp(M.tint,M.tintAmt);
+    this._cP.set(c.pColor).lerp(M.tint,M.tintAmt);
+    u.uColorA.value.copy(this._cA);u.uColorB.value.copy(this._cB);
+    u.uGlowColor.value.copy(this._cG);
+    pu.uPColor.value.copy(this._cP);pu.uPColor2.value.copy(this._cG);
+    u.uDistortion.value=c.distortion;u.uNoiseScale.value=c.noiseScale;
+    u.uFlowSpeed.value=c.flowSpeed;u.uScale.value=c.scale;
+    u.uFresnelPow.value=c.fresnelPow;u.uGlowIntensity.value=c.glowIntensity*M.glow;
+    u.uOpacity.value=c.opacity;u.uMetal.value=c.metal;
+    u.uPulse.value=Math.sin(this.simTime*c.pulseSpeed*M.pulseSpeed)*c.pulseAmp*M.pulseAmp;
+    this.orbMat.wireframe=!!c.wireframe;
+    pu.uPSpeed.value=c.pSpeed*M.pSpeed;pu.uPSize.value=c.pSize;
+    pu.uSpread.value=c.pSpread;pu.uFlat.value=c.pFlat;
+    pu.uScale.value=c.scale;pu.uTrail.value=c.pTrail||0;
+    if(this.trails)this.trails.visible=c.pEnabled&&(c.pTrail||0)>0.02;
+    this.haloMat.color.copy(this._cG);this.halo2Mat.color.copy(this._cG);
+    var hb=c.halo*M.glow;
+    this.haloMat.opacity=Math.min(.7,.16*hb+u.uPulse.value*.25);
+    this.halo2Mat.opacity=Math.min(.75,.22*hb+u.uPulse.value*.3);
+    this.halo.scale.setScalar(3.6*c.scale*Math.max(.3,hb)*(1+u.uPulse.value*.6));
+    this.halo2.scale.setScalar(2.25*c.scale*(1+u.uPulse.value));
+    this.orb.rotation.y+=dt*c.rotSpeed*M.time;
+    if(this.points)this.points.rotation.y=this.orb.rotation.y*.3;
+    if(this.trails)this.trails.rotation.y=this.orb.rotation.y*.3;
+    var r=this.renderer,rt=this.rt;
+    var bgOn=!!c.bgEnabled;
+    if(bgOn&&rt){
+      this.bgMat.uniforms.uTime.value=this.simTime;
+      this.bgMat.uniforms.uBgA.value.set(c.bgA);
+      this.bgMat.uniforms.uBgB.value.set(c.bgB);
+      this.bgMat.uniforms.uBgStars.value=c.bgStars;
+      r.setRenderTarget(rt[5]);r.render(this.bgScene,this.bgCam);
+    }
+    u.uBgOn.value=bgOn?1:0;
+    u.uRefract.value=c.refract||0;
+    u.uDispersion.value=c.dispersion||0;
+    if((c.bloom<=0.01&&c.style===0&&!bgOn)||!rt){
+      r.setRenderTarget(null);r.render(this.scene,this.camera);return;
+    }
+    r.setRenderTarget(rt[0]);r.setClearColor(0x000000,0);r.clear();
+    r.render(this.scene,this.camera);
+    this.brightMat.uniforms.tDiffuse.value=rt[0].texture;
+    this._pass(this.brightMat,rt[1]);
+    this._blur(rt[1],rt[2]);this._blur(rt[1],rt[2]);
+    this.brightMat.uniforms.tDiffuse.value=rt[0].texture;
+    this._pass(this.brightMat,rt[3]);
+    this._blur(rt[3],rt[4]);this._blur(rt[3],rt[4]);this._blur(rt[3],rt[4]);
+    var cm=this.compMat.uniforms;
+    cm.tScene.value=rt[0].texture;cm.tBloomA.value=rt[1].texture;cm.tBloomB.value=rt[3].texture;
+    cm.uStrength.value=c.bloom*M.glow;
+    cm.uStyle.value=c.style||0;cm.uStyleAmt.value=c.styleAmt;
+    cm.uStyleScale.value=c.styleScale;cm.uTone.value=c.toneEnabled?1:0;
+    cm.uToneA.value.set(c.toneA);cm.uToneB.value.set(c.toneB);
+    cm.tBG2.value=rt[5].texture;cm.uBgOn2.value=bgOn?1:0;
+    r.setRenderTarget(null);
+    this._pass(this.compMat,null);
+  }
+}
+`+foot;
+}
+
+function reactExport(){
+return 'import { useEffect, useRef } from "react";\nimport * as THREE from "three";\n\n'
+ +engineSource('bare')
+ +`
+export default function OrbView({ state = "idle", config, className, style }) {
+  const ref = useRef(null);
+  const orbRef = useRef(null);
+  useEffect(() => {
+    orbRef.current = new Orb(ref.current, config);
+    return () => orbRef.current.dispose();
+  }, []);
+  useEffect(() => { if (orbRef.current) orbRef.current.setState(state); }, [state]);
+  return <canvas ref={ref} className={className}
+    style={{ width: "100%", height: "100%", display: "block", ...style }} />;
+}
+`;
+}
+
+function htmlExport(){
+return `<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>${currentPreset.name} — Orb Studio export</title>
+<style>
+  html,body{margin:0;height:100%;background:radial-gradient(900px 600px at 50% 42%,#0c1017,#08090c);overflow:hidden;font-family:system-ui}
+  canvas{position:fixed;inset:0;width:100%;height:100%}
+  #bar{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+  #bar button{padding:7px 13px;border-radius:18px;border:1px solid #2a3240;background:rgba(14,17,22,.85);color:#8a94a3;font-size:12px;cursor:pointer}
+  #bar button.on{color:#64f0d2;border-color:#3a6b5e}
+</style></head><body>
+<canvas id="orb"></canvas>
+<div id="bar"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"><\/script>
+<script>
+${engineSource('global')}
+const orb = new Orb(document.getElementById('orb'));
+const bar = document.getElementById('bar');
+Object.keys(ORB_STATES).forEach(function(s,i){
+  const b=document.createElement('button');
+  b.textContent=s; if(i===0)b.className='on';
+  b.onclick=function(){ orb.setState(s);
+    bar.querySelectorAll('button').forEach(function(x){x.className='';});
+    b.className='on'; };
+  bar.appendChild(b);
+});
+<\/script>
+</body></html>
+`;
+}
+
+function dotCfgJSON(){return JSON.stringify(dparams,null,2);}
+function dotEngineSource(kind){
+  const drawFn=drawDotOrb.toString();
+  const head=`/* ── Dot Orb ── generated ${new Date().toISOString().slice(0,10)}
+   Dotted thought-orb loading indicator for AI / agent UIs.
+   Zero dependencies, ~4KB, canvas 2D. Crisp from 16px to 512px, HiDPI aware.
+   States: idle listening thinking searching processing speaking success error sleeping loading */
+
+var DOT_CONFIG = ${dotCfgJSON()};
+var DOT_STATE_TINT = ${JSON.stringify(DOT_STATE_TINT)};
+${DOT_FIELD}
+function hexToRgb(h){h=h.replace('#','');
+  if(h.length===3)h=h.split('').map(function(c){return c+c;}).join('');
+  return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];}
+function mixRgb(a,b,t){return [a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t];}
+var drawDotOrb = ${drawFn};
+
+/* Controller: mount on a canvas, set the state, done.
+     var orb = new DotOrb(canvasEl, 40);
+     orb.setState('thinking');
+     orb.destroy();                                                        */
+function DotOrb(canvas, size, config){
+  this.canvas=canvas; this.size=size||40;
+  this.cfg=Object.assign({}, DOT_CONFIG, config||{});
+  this.state='idle'; this.t=0; this._last=performance.now();
+  var self=this;
+  this._loop=function(now){
+    self._raf=requestAnimationFrame(self._loop);
+    var dt=Math.max(0,Math.min((now-self._last)/1000,0.05)); self._last=now;
+    self.t+=dt;
+    drawDotOrb(self.canvas,self.size,self.t,self.state,self.cfg);
+  };
+  this._raf=requestAnimationFrame(this._loop);
+}
+DotOrb.prototype.setState=function(s){this.state=s;};
+DotOrb.prototype.set=function(p){Object.assign(this.cfg,p);};
+DotOrb.prototype.resize=function(s){this.size=s;};
+DotOrb.prototype.destroy=function(){cancelAnimationFrame(this._raf);};
+`;
+  if(kind==='module')return head+'\nexport { DotOrb, DOT_CONFIG };\n';
+  if(kind==='global')return head+'\nwindow.DotOrb=DotOrb;window.DOT_CONFIG=DOT_CONFIG;\n';
+  return head;
+}
+function dotReactExport(){
+return 'import { useEffect, useRef } from "react";\n\n'+dotEngineSource('bare')+`
+export default function ThinkingOrb({ state = "idle", size = 40, config }) {
+  const ref = useRef(null);
+  const orb = useRef(null);
+  useEffect(() => {
+    orb.current = new DotOrb(ref.current, size, config);
+    return () => orb.current.destroy();
+  }, []);
+  useEffect(() => { if (orb.current) orb.current.setState(state); }, [state]);
+  useEffect(() => { if (orb.current) orb.current.resize(size); }, [size]);
+  return <canvas ref={ref} width={size} height={size}
+    style={{ width: size, height: size, display: "block" }} />;
+}
+`;
+}
+function dotHtmlExport(){
+  const light=dparams.theme==='light';
+  return `<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>Dot Orb</title>
+<style>
+ body{margin:0;min-height:100vh;display:flex;flex-direction:column;align-items:center;
+   justify-content:center;gap:30px;background:${light?'#eef0f4':'#070707'};
+   color:${light?'#3a4150':'#8a94a3'};font-family:system-ui}
+ .row{display:flex;align-items:flex-end;gap:26px}
+ .row div{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:10px}
+ .bar{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;max-width:520px}
+ .bar button{padding:6px 12px;border-radius:16px;cursor:pointer;font-size:12px;
+   border:1px solid ${light?'#d3d8e0':'#242a34'};background:${light?'#fff':'#111419'};
+   color:inherit}
+ .bar button.on{border-color:#64f0d2;color:#64f0d2}
+</style></head><body>
+<canvas id="big"></canvas>
+<div class="row">
+  <div><canvas class="s" data-size="20"></canvas>20</div>
+  <div><canvas class="s" data-size="28"></canvas>28</div>
+  <div><canvas class="s" data-size="40"></canvas>40</div>
+  <div><canvas class="s" data-size="64"></canvas>64</div>
+</div>
+<div class="bar" id="bar"></div>
+<script>
+${dotEngineSource('global')}
+var orbs=[new DotOrb(document.getElementById('big'),180)];
+document.querySelectorAll('.s').forEach(function(c){
+  orbs.push(new DotOrb(c, +c.dataset.size));
+});
+var states=['working','searching','solving','listening','composing','shaping'];
+var bar=document.getElementById('bar');
+states.forEach(function(s,i){
+  var b=document.createElement('button');
+  b.textContent=s; if(i===0)b.className='on';
+  b.onclick=function(){
+    orbs.forEach(function(o){o.setState(s);});
+    bar.querySelectorAll('button').forEach(function(x){x.className='';});
+    b.className='on';
+  };
+  bar.appendChild(b);
+});
+<\/script>
+</body></html>
+`;
+}
+
+const DOT_TABS=['Config JSON','dot-orb.js','React','HTML demo','Import'];
+function renderModal(){
+  const tabsEl=$('#modal-tabs');tabsEl.innerHTML='';
+  const T=mode==='dots'?DOT_TABS:TABS;
+  T.forEach((t,i)=>{
+    const b=document.createElement('button');
+    b.className='tab'+(i===activeTab?' active':'');
+    b.textContent=t;b.onclick=()=>{activeTab=i;renderModal();};
+    tabsEl.appendChild(b);
+  });
+  const code=$('#modal-code'),hint=$('#modal-hint');
+  code.contentEditable=activeTab===4?'true':'false';
+  if(mode==='dots'){
+    if(activeTab===0){code.textContent=dotCfgJSON();hint.textContent='Dot orb configuration.';}
+    if(activeTab===1){code.textContent=dotEngineSource('module');
+      hint.textContent='Zero dependencies, ~4KB. new DotOrb(canvas, 40).setState("thinking").';}
+    if(activeTab===2){code.textContent=dotReactExport();
+      hint.textContent='Drop-in React: <ThinkingOrb state="thinking" size={24} /> — no libraries needed.';}
+    if(activeTab===3){code.textContent=dotHtmlExport();
+      hint.textContent='Self-contained page with all sizes and states. Download and open.';}
+    if(activeTab===4){code.textContent='// Paste a Dot Orb config JSON, then press Apply config.';
+      hint.textContent='Editable — paste a config and apply.';
+      $('#btn-copy').textContent='Apply config';}
+    else $('#btn-copy').textContent='Copy to clipboard';
+    return;
+  }
+  if(activeTab===0){code.textContent=cfgJSON();
+    hint.textContent='Full orb configuration. Round-trips through the Import tab.';}
+  if(activeTab===1){code.textContent=engineSource('module');
+    hint.textContent='Complete ES module — full shaders, particles, trails, bloom, styles, AI states. npm i three, import, done.';}
+  if(activeTab===2){code.textContent=reactExport();
+    hint.textContent='Drop-in React component: <OrbView state="thinking" />. Requires three.';}
+  if(activeTab===3){code.textContent=htmlExport();
+    hint.textContent='Fully self-contained page — download and double-click. Three.js loads from CDN.';}
+  if(activeTab===4){code.textContent='// Paste an Orb Studio config JSON here, then press "Apply config".';
+    hint.textContent='Editable — paste a config and apply.';
+    $('#btn-copy').textContent='Apply config';}
+  else $('#btn-copy').textContent='Copy to clipboard';
+}
+$('#btn-export').onclick=()=>{activeTab=0;renderModal();$('#modal').classList.add('show');};
+$('#btn-import').onclick=()=>{activeTab=4;renderModal();$('#modal').classList.add('show');};
+$('#modal-close').onclick=()=>$('#modal').classList.remove('show');
+$('#modal').addEventListener('click',e=>{if(e.target.id==='modal')$('#modal').classList.remove('show');});
+$('#btn-copy').onclick=async()=>{
+  if(activeTab===4){
+    try{
+      const cfg=JSON.parse($('#modal-code').textContent);
+      if(mode==='dots'){
+        dparams={...DOT_DEFAULTS,...cfg};applyDotTheme();renderInspectorFor('dots');
+        $('#modal').classList.remove('show');toast('Dot config applied');return;
+      }
+      applyPreset('Imported','Imported Orb',P(cfg));
+      $('#modal').classList.remove('show');
+    }catch{ $('#modal-hint').textContent='Invalid JSON — check the config and try again.'; }
+    return;
+  }
+  try{await navigator.clipboard.writeText($('#modal-code').textContent);
+    $('#btn-copy').textContent='Copied ✓';
+    setTimeout(()=>$('#btn-copy').textContent='Copy to clipboard',1400);
+  }catch{ $('#modal-hint').textContent='Clipboard blocked — select the code and copy manually.'; }
+};
+/* ---- snapshot ---- */
+function snapshotPNG(){
+  if(mode==='dots'){
+    $('#dotmain').toBlob(b=>{
+      if(!b){toast('Snapshot failed');return;}
+      const a2=document.createElement('a');a2.href=URL.createObjectURL(b);
+      a2.download='dot-orb-'+currentState+'.png';a2.click();URL.revokeObjectURL(a2.href);
+      toast('Snapshot saved as PNG');},'image/png');
+    return;
+  }
+  renderFrame();               /* guarantee a fresh, complete frame in the buffer */
+  canvas.toBlob(blob=>{
+    if(!blob){toast('Snapshot failed');return;}
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download=currentPreset.name.toLowerCase().replace(/\s+/g,'-')+'-'+currentState+'.png';
+    a.click();URL.revokeObjectURL(a.href);
+    toast('Snapshot saved as PNG');
+  },'image/png');
+}
+
+/* ---- video recording ---- */
+let recorder=null,recChunks=[],recTimer=null;
+function toggleRecord(){
+  if(recorder){ recorder.stop(); return; }
+  if(!canvas.captureStream||typeof MediaRecorder==='undefined'){
+    toast('Recording unsupported in this browser'); return;
+  }
+  const mimes=['video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm'];
+  const mime=mimes.find(m=>MediaRecorder.isTypeSupported(m));
+  if(!mime){toast('No supported video encoder found');return;}
+  try{
+    const stream=canvas.captureStream(60);
+    recorder=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:12000000});
+  }catch(e){ toast('Could not start recorder'); recorder=null; return; }
+  recChunks=[];
+  recorder.ondataavailable=e=>{if(e.data.size)recChunks.push(e.data);};
+  recorder.onstop=()=>{
+    clearInterval(recTimer);
+    const blob=new Blob(recChunks,{type:'video/webm'});
+    const a2=document.createElement('a');
+    a2.href=URL.createObjectURL(blob);
+    a2.download=currentPreset.name.toLowerCase().replace(/\s+/g,'-')+'.webm';
+    a2.click();URL.revokeObjectURL(a2.href);
+    recorder=null;
+    $('#btn-rec').classList.remove('on');
+    $('#btn-rec').textContent='● Record';
+    toast('Video saved as WebM ('+(blob.size/1048576).toFixed(1)+' MB)');
+  };
+  recorder.start();
+  let secs=0;
+  $('#btn-rec').classList.add('on');
+  recTimer=setInterval(()=>{
+    secs++;$('#btn-rec').textContent='■ Stop '+secs+'s';
+    if(secs>=60&&recorder)recorder.stop();   /* safety cap */
+  },1000);
+  toast('Recording — click Stop to save (60s max)');
+}
+
+/* ---- share link ---- */
+function shareLink(){
+  try{
+    const enc=btoa(unescape(encodeURIComponent(JSON.stringify(params))));
+    const url=location.origin+location.pathname+'#orb='+enc;
+    navigator.clipboard.writeText(url)
+      .then(()=>toast('Share link copied — config travels in the URL'))
+      .catch(()=>toast('Link ready: '+url.slice(0,60)+'…'));
+  }catch{ toast('Could not build share link'); }
+}
+function loadFromHash(){
+  const m=location.hash.match(/#orb=(.+)$/);
+  if(!m)return false;
+  try{
+    const cfg=JSON.parse(decodeURIComponent(escape(atob(m[1]))));
+    applyPreset('Shared','Shared Orb',P(cfg));
+    toast('Loaded orb from shared link');
+    return true;
+  }catch{ return false; }
+}
+
+$('#btn-dl').onclick=()=>{
+  const names=mode==='dots'
+    ?['dot-config.json','dot-orb.js','ThinkingOrb.jsx','dot-orb-demo.html','dot-config.json']
+    :['orb-config.json','orb-engine.js','OrbView.jsx','orb-demo.html','orb-config.json'];
+  const blob=new Blob([$('#modal-code').textContent],{type:'text/plain'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);a.download=names[activeTab];a.click();
+  URL.revokeObjectURL(a.href);
+};
+
+/* ============================================================
+   Node graph — a real dataflow editor. Each node owns parameters and
+   only contributes when a path of wires reaches the Output node.
+   Cutting a wire genuinely disables that stage of the orb.
+   ============================================================ */
+const NODE_DEFS={
+  noise:  {t:'Noise',      x:20, y:24, out:true, in:false,
+           p:[['noiseScale','Scale',.3,6,.05],['flowSpeed','Speed',0,3,.01]]},
+  distort:{t:'Distortion', x:190,y:24, out:true, in:true,
+           p:[['distortion','Amount',0,1.2,.01]], gate:{distortion:0}},
+  pulse:  {t:'Pulse',      x:190,y:150,out:true, in:true,
+           p:[['pulseSpeed','Speed',0,6,.05],['pulseAmp','Amount',0,.35,.005]],
+           gate:{pulseAmp:0}},
+  parts:  {t:'Particles',  x:360,y:24, out:true, in:true,
+           p:[['pCount','Count',0,4000,10],['pSpeed','Speed',0,3,.01]],
+           gate:{pEnabled:false}},
+  trails: {t:'Trails',     x:360,y:150,out:true, in:true,
+           p:[['pTrail','Length',0,1,.01]], gate:{pTrail:0}},
+  glow:   {t:'Glow',       x:530,y:24, out:true, in:true,
+           p:[['glowIntensity','Intensity',0,3,.01],['bloom','Bloom',0,2,.01]],
+           gate:{glowIntensity:.05,bloom:0}},
+  style:  {t:'Design Style',x:530,y:150,out:true,in:true,
+           p:[['styleAmt','Amount',0,1,.01],['styleScale','Scale',.5,4,.05]],
+           gate:{styleAmt:0}},
+  out:    {t:'Output',     x:700,y:88, out:false,in:true, p:[]},
+};
+const nodeState={};                    /* id -> {x,y,el} */
+let wires=[
+  ['noise','distort'],['noise','pulse'],['distort','parts'],['distort','glow'],
+  ['pulse','trails'],['parts','glow'],['trails','style'],['glow','out'],['style','out'],
+];
+let armedPort=null, nodesReady=false;
+
+function nodeActive(id){                /* DFS: does a path reach Output? */
+  if(id==='out')return true;
+  const seen=new Set();
+  const walk=n=>{
+    if(n==='out')return true;
+    if(seen.has(n))return false;
+    seen.add(n);
+    return wires.some(([a,b])=>a===n&&walk(b));
+  };
+  return walk(id);
+}
+
+function buildNodes(){
+  const cv=$('#np-canvas');
+  Object.entries(NODE_DEFS).forEach(([id,d])=>{
+    const el=document.createElement('div');
+    el.className='node';el.style.left=d.x+'px';el.style.top=d.y+'px';
+    el.innerHTML=`<div class="nh"><span class="dot"></span>${d.t}</div><div class="nb"></div>`;
+    const body=el.querySelector('.nb');
+    if(!d.p.length)body.innerHTML='<div class="nrow"><span>final orb</span></div>';
+    d.p.forEach(([k,label,mn,mx,st])=>{
+      const row=document.createElement('div');
+      row.innerHTML=`<div class="nrow"><span>${label}</span><span class="v">${fmt(params[k])}</span></div>`;
+      const r=document.createElement('input');
+      r.type='range';r.min=mn;r.max=mx;r.step=st;r.value=params[k];
+      r.dataset.key=k;
+      r.addEventListener('input',()=>{
+        params[k]=+r.value;
+        row.querySelector('.v').textContent=fmt(params[k]);
+        if(k==='pCount')rebuildParticles();
+        renderInspector();pushDebounced();
+      });
+      body.appendChild(row);body.appendChild(r);
+    });
+    if(d.in){const p=document.createElement('div');p.className='port in';p.dataset.id=id;p.dataset.dir='in';el.appendChild(p);}
+    if(d.out){const p=document.createElement('div');p.className='port out';p.dataset.id=id;p.dataset.dir='out';el.appendChild(p);}
+    cv.appendChild(el);
+    nodeState[id]={x:d.x,y:d.y,el};
+    /* drag */
+    const head=el.querySelector('.nh');
+    head.addEventListener('pointerdown',e=>{
+      e.preventDefault();
+      const sx=e.clientX,sy=e.clientY,ox=nodeState[id].x,oy=nodeState[id].y;
+      const mv=ev=>{
+        nodeState[id].x=Math.max(0,ox+ev.clientX-sx);
+        nodeState[id].y=Math.max(0,oy+ev.clientY-sy);
+        el.style.left=nodeState[id].x+'px';el.style.top=nodeState[id].y+'px';
+        drawWires();
+      };
+      const up=()=>{removeEventListener('pointermove',mv);removeEventListener('pointerup',up);};
+      addEventListener('pointermove',mv);addEventListener('pointerup',up);
+    });
+  });
+  /* port connect */
+  cv.addEventListener('click',e=>{
+    const p=e.target.closest('.port');
+    if(!p)return;
+    if(!armedPort){
+      armedPort={id:p.dataset.id,dir:p.dataset.dir,el:p};
+      p.classList.add('armed');return;
+    }
+    const from=armedPort.dir==='out'?armedPort.id:p.dataset.id;
+    const to  =armedPort.dir==='out'?p.dataset.id:armedPort.id;
+    armedPort.el.classList.remove('armed');
+    if(armedPort.dir!==p.dataset.dir && from!==to &&
+       !wires.some(([a,b])=>a===from&&b===to)){
+      wires.push([from,to]);
+      applyGraph();toast('Connected '+NODE_DEFS[from].t+' → '+NODE_DEFS[to].t);
+    }
+    armedPort=null;
+  });
+}
+
+function drawWires(){
+  const svg=$('#np-wires');
+  svg.innerHTML='';
+  wires.forEach(([a,b],i)=>{
+    const A=nodeState[a],B=nodeState[b];
+    if(!A||!B)return;
+    const x1=A.x+132,y1=A.y+20,x2=B.x,y2=B.y+20;
+    const dx=Math.max(30,Math.abs(x2-x1)*.5);
+    const live=nodeActive(a);
+    const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('d',`M${x1},${y1} C${x1+dx},${y1} ${x2-dx},${y2} ${x2},${y2}`);
+    path.setAttribute('fill','none');
+    path.setAttribute('stroke',live?'#64f0d2':'#39424f');
+    path.setAttribute('stroke-width','2');
+    path.setAttribute('opacity',live?'.85':'.5');
+    path.addEventListener('click',ev=>{
+      ev.stopPropagation();
+      wires.splice(i,1);applyGraph();
+      toast('Cut '+NODE_DEFS[a].t+' → '+NODE_DEFS[b].t);
+    });
+    svg.appendChild(path);
+  });
+}
+
+/* gates: params forced to neutral while a node is disconnected */
+let gateOverrides={};
+function applyGraph(){
+  gateOverrides={};
+  Object.entries(NODE_DEFS).forEach(([id,d])=>{
+    const on=nodeActive(id);
+    if(nodeState[id])nodeState[id].el.classList.toggle('off',!on);
+    if(!on&&d.gate)Object.assign(gateOverrides,d.gate);
+  });
+  drawWires();
+}
+
+function openNodes(){
+  const p=$('#nodes-panel');
+  const willOpen=!p.classList.contains('open');
+  p.classList.toggle('open',willOpen);
+  $('#btn-nodes').classList.toggle('on',willOpen);
+  if(willOpen&&!nodesReady){buildNodes();nodesReady=true;}
+  if(willOpen){applyGraph();}
+}
+$('#btn-nodes').onclick=openNodes;
+$('#nodes-close').onclick=openNodes;
+
+/* ============================================================
+   DOT ORB — dependency-free 2D dotted thought-orb for AI/agent UIs.
+   A grid of dots inside a circular field; each state is a hand-tuned
+   field function driving per-dot scale + opacity. Renders crisply at
+   18px and 220px, and exports as a component with zero dependencies.
+   ============================================================ */
+const DOT_FIELD = `
 function dotField(state,nx,ny,r,ang,t,soft,flatEdge){
   var v=0, edge=flatEdge?1-smooth(0.62,1.0,r):1.0;
   switch(state){
@@ -397,20 +2193,90 @@ function paintDot(g,x,y,rad,a,v,base,tint,cfg,light){
   g.fillStyle='rgba('+rgb+','+Math.min(1,a).toFixed(3)+')';
   g.beginPath();g.arc(x,y,rad,0,6.2832);g.fill();
 }
+`;
+(0,eval)(DOT_FIELD);   /* the studio runs the exact code it exports */
 
-function hexToRgb(h){h=h.replace('#','');
-  if(h.length===3)h=h.split('').map(function(c){return c+c;}).join('');
-  return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];}
+const DOT_DEFAULTS={
+  dotColor:'#ffffff', accent:'#64f0d2', useAccent:false,
+  structure:'sphere', rings:13, density:22, rsPow:.5, tilt:.38,
+  spin:.18, roll:-.06, drift:.25,        /* matched to the reference engine */
+  shimmer:1, flicker:.45, dotPx:0, previewSize:120,
+  cols:13, dotScale:.78, gap:1, hex:true,
+  speed:1, softness:1, minAlpha:.06, glow:.35, jitter:0, theme:'dark',
+};
+let dparams={...DOT_DEFAULTS};
+
+const DOT_SCHEMA=[
+  {id:'dsize',label:'Size',open:true,ctls:[
+    {k:'previewSize',t:'range',l:'Preview size (px)',min:14,max:260,step:1},
+    {k:'dotScale',t:'range',l:'Dot size',min:.2,max:3,step:.01},
+    {k:'dotPx',t:'range',l:'Fixed dot radius (px, 0 = auto)',min:0,max:6,step:.05},
+    {k:'rsPow',t:'range',l:'Size scaling power',min:.2,max:1,step:.01},
+  ]},
+  {id:'dgrid',label:'Structure',open:true,ctls:[
+    {k:'structure',t:'select',l:'Layout',opts:[['sphere','Sphere (3D)'],['grid','Flat grid']]},
+    {k:'rings',t:'range',l:'Latitude rings',min:4,max:26,step:1},
+    {k:'density',t:'range',l:'Ring density',min:5,max:44,step:1},
+    {k:'tilt',t:'range',l:'Axis tilt',min:0,max:1.2,step:.01},
+    {k:'roll',t:'range',l:'Roll (in-plane)',min:-1.5,max:1.5,step:.01},
+    {k:'spin',t:'range',l:'Spin (yaw)',min:-1.5,max:1.5,step:.01},
+    {k:'drift',t:'range',l:'Organic drift',min:0,max:4,step:.01},
+    {k:'shimmer',t:'range',l:'Shimmer',min:0,max:3,step:.01},
+    {k:'flicker',t:'range',l:'Flicker',min:0,max:1,step:.01},
+    {k:'cols',t:'range',l:'Grid resolution',min:5,max:25,step:1},
+    {k:'gap',t:'range',l:'Spacing',min:.7,max:1.6,step:.01},
+    {k:'hex',t:'toggle',l:'Hex packing'},
+  ]},
+  {id:'dlook',label:'Appearance',open:true,ctls:[
+    {k:'theme',t:'select',l:'Theme',opts:[['dark','Dark'],['light','Light']]},
+    {k:'dotColor',t:'color',l:'Dot color'},
+    {k:'useAccent',t:'toggle',l:'Accent by state'},
+    {k:'accent',t:'color',l:'Accent'},
+    {k:'glow',t:'range',l:'Glow',min:0,max:1.5,step:.01},
+    {k:'minAlpha',t:'range',l:'Resting opacity',min:0,max:.5,step:.01},
+  ]},
+  {id:'dmotion',label:'Motion',open:true,ctls:[
+    {k:'speed',t:'range',l:'Speed',min:.2,max:3,step:.01},
+    {k:'softness',t:'range',l:'Contrast',min:.3,max:1.6,step:.01},
+    {k:'jitter',t:'range',l:'Jitter',min:0,max:.5,step:.01},
+  ]},
+];
+
+const DOT_LIBRARY=[
+ {cat:'Dot Orbs',items:[
+  ['Thinking Orb',{...DOT_DEFAULTS}],
+  ['Dense Globe',{...DOT_DEFAULTS,rings:19,density:32,dotScale:.85,glow:.25}],
+  ['Sparse Globe',{...DOT_DEFAULTS,rings:9,density:14,dotScale:1.3,glow:.5}],
+  ['Wide Tilt',{...DOT_DEFAULTS,tilt:.72,rings:15,density:26}],
+  ['Pole On',{...DOT_DEFAULTS,tilt:.05,rings:14,density:24}],
+  ['Calm',{...DOT_DEFAULTS,spin:.09,drift:.12,speed:.7,shimmer:.4,flicker:.25}],
+  ['Restless',{...DOT_DEFAULTS,spin:.34,drift:.7,speed:1.4,shimmer:2,glow:.5,flicker:.7}],
+  ['Mint Agent',{...DOT_DEFAULTS,useAccent:true,accent:'#64f0d2',dotColor:'#93a8a3',glow:.6}],
+  ['Violet Agent',{...DOT_DEFAULTS,useAccent:true,accent:'#a78bfa',dotColor:'#9a97ad',glow:.65}],
+  ['Amber Agent',{...DOT_DEFAULTS,useAccent:true,accent:'#fbbf24',dotColor:'#ab9f86',glow:.55}],
+  ['Light Mode',{...DOT_DEFAULTS,theme:'light',dotColor:'#0b0d12',glow:0,minAlpha:.12}],
+  ['Flat Grid',{...DOT_DEFAULTS,structure:'grid',cols:13,dotScale:.7}],
+ ]},
+];
+
+/* state accent hues used when "Accent by state" is on */
+const DOT_STATE_TINT={working:'#fbbf24',searching:'#5eb8ff',solving:'#a78bfa',
+  composing:'#f472b6',shaping:'#4ade80',idle:null,listening:'#64f0d2',thinking:'#a78bfa',searching:'#5eb8ff',
+  processing:'#fbbf24',speaking:null,success:'#4ade80',error:'#f87171',
+  sleeping:'#64748b',loading:'#94a3b8'};
+
+function hexToRgb(h){
+  h=h.replace('#','');
+  if(h.length===3)h=h.split('').map(c=>c+c).join('');
+  return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];
+}
 function mixRgb(a,b,t){return [a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t];}
-var drawDotOrb = function drawDotOrb(cv,size,time,state,cfg){
-  /* guard: zero/negative/NaN size must never produce NaN geometry */
-  size=Math.max(1,(typeof size==='number'&&isFinite(size))?size:1);
-  var dpr=Math.min((typeof window!=='undefined'&&window.devicePixelRatio)||1,2);
+
+function drawDotOrb(cv,size,time,state,cfg){
+  var dpr=Math.min(window.devicePixelRatio||1,2);
   if(cv.width!==size*dpr||cv.height!==size*dpr){
     cv.width=size*dpr;cv.height=size*dpr;
-    /* when the controller owns sizing (applyStyle===false) authors can render
-       at one resolution and display at another (supersampling) */
-    if(cfg.applyStyle!==false){cv.style.width=size+'px';cv.style.height=size+'px';}
+    cv.style.width=size+'px';cv.style.height=size+'px';
   }
   var g=cv.getContext('2d');
   g.setTransform(dpr,0,0,dpr,0,0);
@@ -514,430 +2380,195 @@ var drawDotOrb = function drawDotOrb(cv,size,time,state,cfg){
     }
   }
   g.shadowBlur=0;
-};
-
-
-/* ------------------------------------------------------------------ *
- *  Presets: the six agent states, plus size-tuned defaults
- * ------------------------------------------------------------------ */
-var STATES = ['working','searching','solving','listening','composing','shaping'];
-
-var THEMES = {
-  dark:  { dotColor: '#ffffff', glow: 0.35, minAlpha: 0.06 },
-  light: { dotColor: '#0b0d12', glow: 0,    minAlpha: 0.12 }
-};
-
-/* Small orbs are a coarser globe, not a shrunken dense one. */
-function sizeTune(size) {
-  if (size <= 28) return { rings: 8,  density: 13 };
-  if (size <= 48) return { rings: 10, density: 17 };
-  return           { rings: 13, density: 22 };
 }
 
-function resolveTheme(el, pref) {
-  if (pref === 'dark' || pref === 'light') return pref;
-  /* walk the element's own ancestor chain — must work in detached trees and
-     shadow roots, so this is not gated on a global `document` */
-  var n = el;
-  while (n && n.nodeType === 1) {
-    var attr = n.getAttribute && n.getAttribute('data-theme');
-    if (attr === 'dark' || attr === 'light') return attr;
-    if (n.classList && n.classList.contains('dark')) return 'dark';
-    if (n.classList && n.classList.contains('light')) return 'light';
-    n = n.parentNode || n.host || null;      /* cross shadow-root boundary */
-  }
-  if (typeof matchMedia === 'function' &&
-      matchMedia('(prefers-color-scheme: light)').matches) return 'light';
-  return 'dark';
+/* ---- dot mode driver ---- */
+let mode='3d', dotTime=0, dotLast=performance.now();
+const dotCanvases=()=>[[$('#dotmain'),Math.round(dparams.previewSize)],
+  ...[...document.querySelectorAll('#dotsizes canvas')].map(c=>[c,+c.dataset.size]),
+  ...[...document.querySelectorAll('#dotctx canvas')].map(c=>[c,+c.dataset.size])];
+
+function dotLoop(now){
+  requestAnimationFrame(dotLoop);
+  if(mode!=='dots')return;
+  const dt=Math.max(0,Math.min((now-dotLast)/1000,.05));dotLast=now;
+  dotTime+=dt;
+  dotCanvases().forEach(([cv,sz])=>{if(cv)drawDotOrb(cv,sz,dotTime,currentState,dparams);});
+}
+requestAnimationFrame(dotLoop);
+
+function setDotSize(px){
+  px=Math.max(14,Math.min(260,Math.round(px)));
+  dparams.previewSize=px;
+  const m=$('#dotmain');
+  m.style.width=px+'px';m.style.height=px+'px';
+  $('#sizerange').value=px;
+  $('#sizeval').textContent=px+'px';
+  document.querySelectorAll('.schip').forEach(b=>b.classList.toggle('active',+b.dataset.s===px));
+  const inp=[...document.querySelectorAll('#right input[type=range]')]
+    .find(i=>i.previousSibling&&/Preview size/.test(i.parentElement.textContent||''));
+  if(inp)inp.value=px;
+}
+document.querySelectorAll('.schip').forEach(b=>b.onclick=()=>setDotSize(+b.dataset.s));
+$('#sizerange').addEventListener('input',e=>setDotSize(+e.target.value));
+
+function applyDotTheme(){
+  const st=$('#dotstage');
+  const light=dparams.theme==='light';
+  st.classList.toggle('light',light);
+  $('#view').style.background=light
+    ? 'radial-gradient(1200px 700px at 50% 45%, #f7f8fa 0%, #e7eaef 75%)'
+    : BGS[0][0];
 }
 
-function reducedMotion() {
-  return typeof matchMedia === 'function' &&
-         matchMedia('(prefers-reduced-motion: reduce)').matches;
+function buildStateBar(m){
+  const bar=$('#states');
+  bar.querySelectorAll('.state').forEach(x=>x.remove());
+  const list=m==='dots'
+    ? ['working','searching','solving','listening','composing','shaping',
+       'idle','thinking','processing','speaking','success','error','sleeping']
+    : Object.keys(STATES);
+  if(list.indexOf(currentState)<0)currentState=list[0];
+  list.forEach(st=>{
+    const b2=document.createElement('button');
+    b2.className='state'+(st===currentState?' active':'');
+    b2.textContent=st[0].toUpperCase()+st.slice(1);
+    b2.onclick=()=>{currentState=st;
+      bar.querySelectorAll('.state').forEach(x=>x.classList.remove('active'));
+      b2.classList.add('active');};
+    bar.appendChild(b2);
+  });
 }
 
-/* ------------------------------------------------------------------ *
- *  Orb controller
- * ------------------------------------------------------------------ */
-function Orb(canvas, options) {
-  if (!canvas) throw new Error('OrbDots: a canvas element is required');
-  var o = options || {};
-  this.canvas = canvas;
-  this.state = o.state || 'working';
-  this.size = o.size || canvas.clientWidth || 64;
-  this.speedMul = o.speed == null ? 1 : o.speed;
-  this.themePref = o.theme || 'auto';
-  this.paused = !!o.paused;
-  this.userCfg = o.config || {};
-  /* display size in CSS px; defaults to `size`, but an author-set inline size
-     is respected so render-at-64 / show-at-40 supersampling keeps working */
-  this.display = o.display || null;
-  this._authorSized = !!(canvas.style && canvas.style.width);
-  this.t = 0;
-  this._last = 0;
-  this._visible = true;
-  this._build();
-
-  var self = this;
-
-  /* live theme updates */
-  if (this.themePref === 'auto' && typeof MutationObserver === 'function') {
-    this._mo = new MutationObserver(function () { self._build(); self._paint(); });
-    var n = canvas.parentNode;
-    while (n && n.nodeType === 1) {
-      this._mo.observe(n, { attributes: true, attributeFilter: ['data-theme', 'class'] });
-      n = n.parentNode;
-    }
-    if (typeof matchMedia === 'function') {
-      this._mq = matchMedia('(prefers-color-scheme: light)');
-      this._onMq = function () { self._build(); self._paint(); };
-      if (this._mq.addEventListener) this._mq.addEventListener('change', this._onMq);
-      else if (this._mq.addListener) this._mq.addListener(this._onMq);
-    }
-  }
-
-  /* stop animating when scrolled out of view — saves battery on long pages */
-  if (typeof IntersectionObserver === 'function') {
-    this._io = new IntersectionObserver(function (e) {
-      self._visible = e[0].isIntersecting;
-    }, { threshold: 0 });
-    this._io.observe(canvas);
-  }
-
-  this._loop = function (now) {
-    self._raf = requestAnimationFrame(self._loop);
-    /* a non-finite timestamp from a polyfilled rAF would poison the clock
-       forever (Math.max(0, NaN) is NaN), so reject it outright */
-    if (typeof now !== 'number' || !isFinite(now)) return;
-    if (!self._last) self._last = now;
-    var dt = (now - self._last) / 1000;
-    if (!isFinite(dt)) dt = 0;
-    dt = Math.max(0, Math.min(dt, 0.05));
-    self._last = now;
-    if (self.paused || !self._visible) return;
-    self.t += dt * self.speedMul;
-    self._paint();
-  };
-  this._raf = requestAnimationFrame(this._loop);
-  this._applySize();
-  this._paint();
+function setMode(m){
+  mode=m;
+  document.querySelectorAll('.msw').forEach(b=>b.classList.toggle('active',b.dataset.mode===m));
+  $('#dotstage').classList.toggle('on',m==='dots');
+  canvas.style.display=m==='dots'?'none':'block';
+  $('#preset-name .nm').textContent=m==='dots'?'Classic Dots':currentPreset.name;
+  $('#preset-name .ct').textContent=m==='dots'?'Dot Orbs':currentPreset.cat;
+  ['btn-nodes','btn-mic','btn-cam','btn-rec'].forEach(id=>{
+    const el=$('#'+id); if(el)el.style.display=m==='dots'?'none':'';
+  });
+  if(m==='dots'){ $('#nodes-panel').classList.remove('open'); applyDotTheme();
+    setDotSize(dparams.previewSize); }
+  else { $('#view').style.background=BGS[bgIndex][0]; }
+  buildStateBar(m);
+  renderLibraryFor(m);
+  renderInspectorFor(m);
 }
+document.querySelectorAll('.msw').forEach(b=>b.onclick=()=>setMode(b.dataset.mode));
 
-Orb.prototype._build = function () {
-  var theme = resolveTheme(this.canvas, this.themePref);
-  var tuned = sizeTune(this.size);
-  this.cfg = {};
-  for (var k in DOT_CONFIG) this.cfg[k] = DOT_CONFIG[k];
-  for (var k2 in THEMES[theme]) this.cfg[k2] = THEMES[theme][k2];
-  for (var k3 in tuned) this.cfg[k3] = tuned[k3];
-  this.cfg.theme = theme;
-  for (var k4 in this.userCfg) this.cfg[k4] = this.userCfg[k4];
-  this.cfg.applyStyle = false;            /* the controller sizes the canvas */
-  if (reducedMotion()) { this.cfg.shimmer = 0; this.cfg.drift = 0; this.cfg.flicker = 0.1; }
-  this.theme = theme;
-};
-
-Orb.prototype._applySize = function () {
-  var px = this.display || (this._authorSized ? null : this.size);
-  if (px && this.canvas.style) {
-    this.canvas.style.width = px + 'px';
-    this.canvas.style.height = px + 'px';
-  }
-};
-
-Orb.prototype._paint = function () {
-  drawDotOrb(this.canvas, this.size, this.t, this.state, this.cfg);
-};
-
-Orb.prototype.setState = function (s) {
-  this.state = s; if (this.paused) this._paint(); return this;
-};
-Orb.prototype.setSize = function (px, displayPx) {
-  this.size = Math.max(1, px);
-  if (displayPx !== undefined) this.display = displayPx;
-  this._build(); this._applySize(); this._paint(); return this;
-};
-Orb.prototype.setSpeed = function (m) { this.speedMul = m; return this; };
-Orb.prototype.setTheme = function (t) {
-  this.themePref = t; this._build(); this._paint(); return this;
-};
-Orb.prototype.set = function (patch) {
-  for (var k in patch) this.userCfg[k] = patch[k];
-  this._build(); this._paint(); return this;
-};
-Orb.prototype.pause  = function () { this.paused = true;  return this; };
-Orb.prototype.play   = function () { this.paused = false; return this; };
-Orb.prototype.toPNG  = function () { return this.canvas.toDataURL('image/png'); };
-Orb.prototype.destroy = function () {
-  cancelAnimationFrame(this._raf);
-  if (this._mo) this._mo.disconnect();
-  if (this._io) this._io.disconnect();
-  if (this._mq && this._onMq) {
-    if (this._mq.removeEventListener) this._mq.removeEventListener('change', this._onMq);
-    else if (this._mq.removeListener) this._mq.removeListener(this._onMq);
-  }
-};
-
-/* ------------------------------------------------------------------ *
- *  Public API
- * ------------------------------------------------------------------ */
-function create(canvas, options) { return new Orb(canvas, options); }
-
-/* auto-mount every <canvas data-orb="state"> on the page */
-function auto(root) {
-  var scope = root || (typeof document !== 'undefined' ? document : null);
-  if (!scope) return [];
-  var out = [];
-  var nodes = scope.querySelectorAll('canvas[data-orb]');
-  for (var i = 0; i < nodes.length; i++) {
-    var el = nodes[i];
-    if (el.__orb) continue;
-    var st = el.getAttribute('data-orb') || 'working';
-    var orb = new Orb(el, {
-      state: st,
-      size: parseInt(el.getAttribute('data-size'), 10) || el.clientWidth || 64,
-      display: parseInt(el.getAttribute('data-display'), 10) || null,
-      speed: parseFloat(el.getAttribute('data-speed')) || 1,
-      theme: el.getAttribute('data-theme-mode') || 'auto'
+/* mode-aware inspector + library (3D versions untouched) */
+function renderInspectorFor(m){
+  if(m!=='dots')return renderInspector();
+  rightEl.innerHTML='';
+  DOT_SCHEMA.forEach(sec=>{
+    const s=document.createElement('div');
+    s.className='insp-sec open';
+    const h=document.createElement('button');
+    h.className='insp-head';h.innerHTML=`${sec.label}<span class="chev">▶</span>`;
+    h.onclick=()=>s.classList.toggle('open');
+    s.appendChild(h);
+    const body=document.createElement('div');body.className='insp-body';
+    sec.ctls.forEach(c=>{
+      if(c.t==='range'){
+        const d=document.createElement('div');d.className='ctl';
+        d.innerHTML=`<div class="ctl-row"><span class="ctl-lbl">${c.l}</span><span class="ctl-val">${fmt(dparams[c.k])}</span></div>`;
+        const r=document.createElement('input');
+        r.type='range';r.min=c.min;r.max=c.max;r.step=c.step;r.value=dparams[c.k];
+        r.addEventListener('input',()=>{dparams[c.k]=+r.value;
+          d.querySelector('.ctl-val').textContent=fmt(dparams[c.k]);
+          if(c.k==='previewSize')setDotSize(+r.value);});
+        d.appendChild(r);body.appendChild(d);
+      }else if(c.t==='color'){
+        const d=document.createElement('div');d.className='color-ctl';
+        d.innerHTML=`<span class="ctl-lbl">${c.l}</span>`;
+        const i=document.createElement('input');i.type='color';i.value=dparams[c.k];
+        i.addEventListener('input',()=>{dparams[c.k]=i.value;});
+        d.appendChild(i);body.appendChild(d);
+      }else if(c.t==='toggle'){
+        const d=document.createElement('div');d.className='toggle-ctl';
+        d.innerHTML=`<span class="ctl-lbl">${c.l}</span>`;
+        const tg=document.createElement('button');
+        tg.className='tog'+(dparams[c.k]?' on':'');
+        tg.onclick=()=>{dparams[c.k]=!dparams[c.k];tg.classList.toggle('on');};
+        d.appendChild(tg);body.appendChild(d);
+      }else if(c.t==='select'){
+        const d=document.createElement('div');d.className='color-ctl';
+        d.innerHTML=`<span class="ctl-lbl">${c.l}</span>`;
+        const s2=document.createElement('select');s2.className='sel';
+        c.opts.forEach(([v,l])=>{const o=document.createElement('option');
+          o.value=v;o.textContent=l;if(dparams[c.k]===v)o.selected=true;s2.appendChild(o);});
+        s2.addEventListener('change',()=>{dparams[c.k]=s2.value;applyDotTheme();});
+        d.appendChild(s2);body.appendChild(d);
+      }
     });
-    if (el.setAttribute && !el.getAttribute('aria-label')) {
-      el.setAttribute('role', 'img');
-      el.setAttribute('aria-label', st + '\u2026');
-    }
-    el.__orb = orb;
-    out.push(orb);
-  }
-  return out;
+    s.appendChild(body);rightEl.appendChild(s);
+  });
 }
 
-if (typeof document !== 'undefined') {
-  if (document.readyState === 'loading')
-    document.addEventListener('DOMContentLoaded', function () { auto(); });
-  else auto();
+function renderLibraryFor(m){
+  if(m!=='dots')return renderLibrary($('#search').value);
+  listEl.innerHTML='';
+  const f=$('#search').value.trim().toLowerCase();
+  DOT_LIBRARY.forEach(grp=>{
+    const items=grp.items.filter(([n])=>!f||n.toLowerCase().includes(f));
+    if(!items.length)return;
+    const cat=document.createElement('div');cat.className='cat open';
+    const head=document.createElement('button');
+    head.className='cat-head';head.innerHTML=`${grp.cat}<span class="chev">▶</span>`;
+    head.onclick=()=>cat.classList.toggle('open');
+    cat.appendChild(head);
+    const wrap=document.createElement('div');wrap.className='cat-items';
+    items.forEach(([name,cfg])=>{
+      const b=document.createElement('button');
+      b.className='preset';
+      b.innerHTML=`<span class="swatch" style="background:${cfg.useAccent?cfg.accent:cfg.dotColor};--sw:${(cfg.useAccent?cfg.accent:cfg.dotColor)}66"></span>${name}`;
+      b.onclick=()=>{
+        dparams={...cfg};
+        $('#preset-name .nm').textContent=name;
+        $('#preset-name .ct').textContent='Dot Orbs';
+        applyDotTheme();renderInspectorFor('dots');
+        listEl.querySelectorAll('.preset').forEach(x=>x.classList.remove('active'));
+        b.classList.add('active');
+      };
+      wrap.appendChild(b);
+    });
+    cat.appendChild(wrap);listEl.appendChild(cat);
+  });
 }
 
-return {
-  create: create,
-  auto: auto,
-  Orb: Orb,
-  STATES: STATES,
-  defaults: DOT_CONFIG,
-  draw: drawDotOrb,
-  version: '1.0.0'
-};
-}));
-
-</script>
-<script>
-(function(){
-  var $=function(s){return document.querySelector(s)};
-  var STATES=OrbDots.STATES;
-  var state='working', size=120, speed=1;
-  /* cfg holds ONLY what the user has actually changed, so the small previews
-     keep the library's per-size tuning and the generated code stays clean */
-  var cfg={};
-  var base=OrbDots.defaults;
-
-  /* hero */
-  var hero=OrbDots.create($('#hero'),{state:'searching',size:84});
-
-  /* theme toggle */
-  $('#theme-btn').onclick=function(){
-    var cur=document.documentElement.getAttribute('data-theme');
-    document.documentElement.setAttribute('data-theme',cur==='dark'?'light':'dark');
-  };
-
-  /* playground orbs */
-  var main=OrbDots.create($('#pg-main'),{state:state,size:size,config:cfg});
-  var previews=[].map.call(document.querySelectorAll('.pv'),function(c){
-    return OrbDots.create(c,{state:state,size:+c.dataset.s,config:cfg});
-  });
-  function allOrbs(){return [main].concat(previews)}
-
-  /* state buttons */
-  var sc=$('#states');
-  STATES.forEach(function(s){
-    var b=document.createElement('button');
-    b.className='stbtn'+(s===state?' on':'');
-    b.textContent=s;
-    b.onclick=function(){
-      state=s;
-      sc.querySelectorAll('.stbtn').forEach(function(x){x.classList.remove('on')});
-      b.classList.add('on');
-      allOrbs().forEach(function(o){o.setState(s)});
-      $('#chip-label').textContent='Agent '+s+'\u2026';
-      $('#chip-label').setAttribute('data-text','Agent '+s+'\u2026');
-      render();
-    };
-    sc.appendChild(b);
-  });
-
-  /* controls */
-  var CONTROLS=[
-    {k:'__size',l:'Size',min:14,max:240,step:1,get:function(){return size}},
-    {k:'__speed',l:'Speed',min:.25,max:3,step:.05,get:function(){return speed}},
-    {k:'rings',l:'Latitude rings',min:4,max:26,step:1},
-    {k:'density',l:'Ring density',min:5,max:44,step:1},
-    {k:'tilt',l:'Axis tilt',min:0,max:1.2,step:.01},
-    {k:'spin',l:'Spin speed',min:0,max:1,step:.01},
-    {k:'dotScale',l:'Dot size',min:.3,max:2.5,step:.01},
-    {k:'glow',l:'Glow',min:0,max:1.2,step:.01},
-    {k:'flicker',l:'Flicker',min:0,max:1,step:.01}
-  ];
-  var panel=$('#panel');
-  panel.innerHTML='<div class="field"><label>Preview size</label><div class="chips" id="szchips"></div></div>';
-  [16,20,24,32,64,120,180].forEach(function(s){
-    var b=document.createElement('button');
-    b.className='szchip'+(s===size?' on':'');
-    b.textContent=s;
-    b.onclick=function(){setSize(s);render();};
-    $('#szchips').appendChild(b);
-  });
-  CONTROLS.forEach(function(c){
-    var f=document.createElement('div');f.className='field';
-    var val=c.get?c.get():base[c.k];
-    f.innerHTML='<label>'+c.l+'<span>'+val+'</span></label>';
-    var r=document.createElement('input');
-    r.type='range';r.min=c.min;r.max=c.max;r.step=c.step;r.value=val;
-    r.oninput=function(){
-      var v=+r.value;
-      f.querySelector('span').textContent=v;
-      if(c.k==='__size')setSize(v);
-      else if(c.k==='__speed'){speed=v;allOrbs().forEach(function(o){o.setSpeed(v)});}
-      else {cfg[c.k]=v;allOrbs().forEach(function(o){o.set(cfg)});}
-      render();
-    };
-    f.appendChild(r);panel.appendChild(f);
-    c._el=f;
-  });
-  /* reset */
-  var rf=document.createElement('button');
-  rf.className='szchip';rf.style.marginTop='4px';rf.textContent='Reset to defaults';
-  rf.onclick=function(){
-    cfg={};speed=1;
-    allOrbs().forEach(function(o){o.set(Object.assign({},base));o.setSpeed(1)});
-    CONTROLS.forEach(function(c){
-      if(c.k==='__size'||c.k==='__speed')return;
-      var i=c._el.querySelector('input');i.value=base[c.k];
-      c._el.querySelector('span').textContent=base[c.k];
-    });
-    render();
-  };
-
-  /* colour */
-  var cf=document.createElement('div');cf.className='field';
-  cf.innerHTML='<label>Accent colour<span>on state</span></label>';
-  var ci=document.createElement('input');ci.type='color';ci.value=cfg.accent;
-  ci.oninput=function(){
-    cfg.accent=ci.value;cfg.useAccent=true;
-    allOrbs().forEach(function(o){o.set(cfg)});render();
-  };
-  cf.appendChild(ci);panel.appendChild(cf);panel.appendChild(rf);
-
-  function setSize(v){
-    size=v;
-    main.setSize(v);
-    $('#pg-main').style.width=v+'px';$('#pg-main').style.height=v+'px';
-    document.querySelectorAll('#szchips .szchip').forEach(function(b){
-      b.classList.toggle('on',+b.textContent===v)});
-    var sizeCtl=CONTROLS[0]._el;
-    if(sizeCtl){sizeCtl.querySelector('input').value=v;sizeCtl.querySelector('span').textContent=v;}
+/* keyboard shortcuts */
+addEventListener('keydown',e=>{
+  if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='z'){
+    e.preventDefault(); e.shiftKey?redo():undo(); return;
   }
-  setSize(size);
+  if(e.target.tagName==='INPUT'||e.target.isContentEditable)return;
+  if(e.key==='r')$('#btn-random').click();
+  if(e.key==='e')$('#btn-export').click();
+  if(e.key==='b')$('#btn-bg').click();
+  if(e.key==='s')savePreset();
+  if(e.key==='p')snapshotPNG();
+  if(e.key==='m')toggleAudio();
+  if(e.key==='l')shareLink();
+  if(e.key==='v')toggleRecord();
+  if(e.key==='n')openNodes();
+  if(e.key==='d')setMode(mode==='dots'?'3d':'dots');
+  if(e.key==='?')toast('R random · S save · P snapshot · V record · M mic · L link · N nodes · D dot mode · E export · B bg · 1-0 states · ⌘Z undo');
+  if(e.key==='Escape')$('#modal').classList.remove('show');
+  const n=parseInt(e.key);
+  if(n>=1&&n<=9){const keys=Object.keys(STATES);
+    if(keys[n-1])statesEl.children[n].click();}
+  if(e.key==='0')statesEl.children[10]&&statesEl.children[10].click();
+});
 
-  /* ---- code output ---- */
-  function nonDefault(){
-    var out={};
-    for(var k in cfg) if(cfg[k]!==base[k]) out[k]=cfg[k];
-    return out;
-  }
-  function cfgStr(){
-    var o=nonDefault(),parts=[];
-    for(var k in o)parts.push(k+': '+(typeof o[k]==='string'?"'"+o[k]+"'":o[k]));
-    return parts.length?'{ '+parts.join(', ')+' }':'';
-  }
-  var TABS={
-    install:[
-      ['HTML','<b>&lt;script src="orb-dots.js"&gt;&lt;/script&gt;</b>\n\n'+
-        '&lt;!-- any canvas with data-orb mounts automatically --&gt;\n'+
-        '<b>&lt;canvas data-orb="searching" data-size="24"&gt;&lt;/canvas&gt;</b>'],
-      ['JavaScript','<b>const orb = OrbDots.create(canvas, {\n'+
-        '  state: \'searching\',\n  size: 64\n});</b>\n\n'+
-        'orb.setState(\'solving\');   // switch animation\n'+
-        'orb.setSpeed(1.5);         // speed multiplier\n'+
-        'orb.setTheme(\'light\');    // auto | dark | light\n'+
-        'orb.pause(); orb.play();   // freeze / resume\n'+
-        'orb.toPNG();               // data URL snapshot\n'+
-        'orb.destroy();             // full cleanup'],
-      ['React','import OrbDot from \'./OrbDots.jsx\';\n\n'+
-        'function Status({ busy }) {\n'+
-        '  return (\n'+
-        '    <b>&lt;OrbDot state="thinking" size={24} /&gt;</b>\n'+
-        '  );\n}'],
-      ['TypeScript','import OrbDots, { OrbState } from \'./orb-dots\';\n\n'+
-        'const state: OrbState = \'composing\';\n'+
-        'const orb = OrbDots.create(canvasEl, { state, size: 64 });']
-    ],
-    out:[
-      ['HTML',function(){
-        return '&lt;canvas data-orb="'+state+'" data-size="'+size+'"'+
-          (speed!==1?' data-speed="'+speed+'"':'')+'&gt;&lt;/canvas&gt;';
-      }],
-      ['JavaScript',function(){
-        var c=cfgStr();
-        return 'OrbDots.create(canvas, {\n  state: \''+state+'\',\n  size: '+size+
-          (speed!==1?',\n  speed: '+speed:'')+
-          (c?',\n  config: '+c:'')+'\n});';
-      }],
-      ['React',function(){
-        var c=cfgStr();
-        return '&lt;OrbDot\n  state="'+state+'"\n  size={'+size+'}'+
-          (speed!==1?'\n  speed={'+speed+'}':'')+
-          (c?'\n  config={'+c+'}':'')+'\n/&gt;';
-      }],
-      ['Config JSON',function(){
-        return JSON.stringify(Object.assign({state:state,size:size,speed:speed},nonDefault()),null,2);
-      }]
-    ]
-  };
-  var active={install:0,out:0};
-  function renderTabs(kind){
-    var el=document.getElementById(kind+'-tabs');el.innerHTML='';
-    TABS[kind].forEach(function(t,i){
-      var b=document.createElement('button');
-      b.className='codetab'+(i===active[kind]?' on':'');
-      b.textContent=t[0];
-      b.onclick=function(){active[kind]=i;renderTabs(kind);renderCode(kind);};
-      el.appendChild(b);
-    });
-  }
-  function renderCode(kind){
-    var t=TABS[kind][active[kind]][1];
-    document.getElementById(kind+'-code').innerHTML=(typeof t==='function'?t():t);
-  }
-  function render(){renderCode('out');}
-  renderTabs('install');renderCode('install');
-  renderTabs('out');renderCode('out');
-
-  $('#states-doc').innerHTML=
-    '<b>working</b>     particles ride tilted orbits around the globe\n'+
-    '<b>searching</b>   a scan meridian sweeps across the dotted sphere\n'+
-    '<b>solving</b>     latitude bands scramble, then click back into place\n'+
-    '<b>listening</b>   a waveform rolls through the rings, pole to pole\n'+
-    '<b>composing</b>   an undulating sash band winds around the surface\n'+
-    '<b>shaping</b>     a dotted outline morphs circle \u2192 triangle \u2192 square';
-
-  /* copy buttons */
-  document.querySelectorAll('.copy').forEach(function(b){
-    b.onclick=function(){
-      var txt=document.getElementById(b.dataset.copy+'-code').textContent;
-      navigator.clipboard.writeText(txt).then(function(){
-        var o=b.textContent;b.textContent='Copied';
-        setTimeout(function(){b.textContent=o},1400);
-      }).catch(function(){b.textContent='Select & copy';});
-    };
-  });
-})();
+/* init */
+renderLibrary();
+if(!loadFromHash())applyPreset('Core','Glow Orb',LIBRARY[0].items[0][1]);
+snapshot();updateHistBtns();
+/* prime dot canvases so the mode switch is instant */
+dotCanvases().forEach(([cv,sz])=>{if(cv)drawDotOrb(cv,sz,0,'working',dparams);});
 </script>
 </body>
 </html>

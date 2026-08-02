@@ -7,7 +7,7 @@
  * This is an independent implementation.
  *
  *   <canvas data-orb="searching" data-size="24"></canvas>
- *   <script src="orb-dots.js"><\/script>          // auto-mounts [data-orb]
+ *   <script src="orbs-studio.js"><\/script>          // auto-mounts [data-orb]
  *
  *   const orb = OrbDots.create(canvas, { state: 'thinking', size: 64 });
  *   orb.setState('solving'); orb.setSpeed(1.5); orb.pause(); orb.destroy();
