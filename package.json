@@ -10,6 +10,9 @@
                "loading-indicator", "thinking", "react", "zero-dependency"],
   "sideEffects": false,
   "license": "MIT",
+  "repository": { "type": "git", "url": "git+https://github.com/yashh451/orbsstudio.git" },
+  "homepage": "https://yashh451.github.io/orbsstudio/",
+  "bugs": { "url": "https://github.com/yashh451/orbsstudio/issues" },
   "peerDependencies": { "react": ">=16.8.0" },
   "peerDependenciesMeta": { "react": { "optional": true } }
 }
