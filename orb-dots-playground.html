@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Orb Dots — animated thinking orbs for AI &amp; agent UIs</title>
+<meta name="description" content="Dotted thought-orb loading indicators for AI and agent interfaces. Six animated states, size-tuned presets, auto dark/light, zero dependencies.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#070707; --surface:rgba(217,217,217,.035); --pill:rgba(29,29,29,.55);
+  --stroke:rgba(255,255,255,.07); --fg:#fbfbfb; --muted:rgba(251,251,251,.55);
+  --faint:rgba(251,251,251,.3); --line:rgba(255,255,255,.08);
+  --code-bg:#0d0d0f; --accent:#64f0d2; --btn:rgba(255,255,255,.06);
+  --btn-hover:rgba(255,255,255,.11);
+}
+html[data-theme="light"]{
+  --bg:#f4f5f7; --surface:rgba(0,0,0,.028); --pill:rgba(255,255,255,.75);
+  --stroke:rgba(0,0,0,.07); --fg:#0d0d0f; --muted:rgba(7,7,7,.6);
+  --faint:rgba(7,7,7,.38); --line:rgba(0,0,0,.09);
+  --code-bg:#ffffff; --accent:#0f9c85; --btn:rgba(0,0,0,.05);
+  --btn-hover:rgba(0,0,0,.09);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--fg);font-family:Inter,system-ui,-apple-system,sans-serif;
+  font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased;
+  transition:background .25s,color .25s}
+main{max-width:883px;margin:0 auto;padding:0 24px 80px}
+a{color:inherit}
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+code,pre{font-family:'JetBrains Mono',ui-monospace,Menlo,monospace}
+
+/* header */
+header{padding:56px 0 40px;text-align:center;position:relative}
+.hero-orb{display:flex;justify-content:center;margin-bottom:22px}
+h1{font-size:34px;font-weight:600;letter-spacing:-.02em;margin-bottom:10px}
+.sub{color:var(--muted);font-size:16px;max-width:520px;margin:0 auto}
+.topnav{position:absolute;top:20px;right:0;display:flex;gap:8px}
+.iconbtn{width:36px;height:36px;border-radius:50%;background:var(--btn);
+  display:flex;align-items:center;justify-content:center;font-size:14px;
+  transition:background .2s}
+.iconbtn:hover{background:var(--btn-hover)}
+
+/* hero examples */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.card{background:var(--surface);border-radius:26px;display:flex;align-items:center;
+  justify-content:center;padding:44px 24px;min-height:200px}
+.card.sm{min-height:132px}
+.pill{display:inline-flex;align-items:center;gap:13px;padding:9px 30px 9px 10px;
+  border-radius:999px;background:var(--pill);box-shadow:inset 0 0 0 1px var(--stroke);
+  font-size:17px}
+.chip{display:inline-flex;align-items:center;gap:9px;padding:7px 15px 7px 8px;
+  border-radius:999px;background:var(--pill);box-shadow:inset 0 0 0 1px var(--stroke);
+  font-size:12.5px}
+.shim{background:linear-gradient(90deg,var(--muted) 35%,var(--fg) 50%,var(--muted) 65%);
+  background-size:300% 100%;-webkit-background-clip:text;background-clip:text;
+  color:transparent;animation:shim 2.4s linear infinite}
+@keyframes shim{from{background-position:150% 0}to{background-position:-50% 0}}
+@media (prefers-reduced-motion:reduce){.shim{animation:none;color:var(--muted);background:none;-webkit-text-fill-color:currentColor}}
+
+/* sections */
+section{margin-top:52px}
+h2{font-size:17px;font-weight:600;margin-bottom:6px}
+.lead{color:var(--muted);font-size:14px;margin-bottom:18px}
+
+/* code */
+.codebox{background:var(--code-bg);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.codetabs{display:flex;gap:2px;padding:8px 8px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.codetab{padding:7px 13px;border-radius:8px 8px 0 0;font-size:12.5px;color:var(--muted)}
+.codetab.on{color:var(--fg);background:var(--btn)}
+.codebody{position:relative}
+pre{padding:16px 18px;overflow-x:auto;font-size:12.5px;line-height:1.65;color:var(--muted)}
+pre b{color:var(--fg);font-weight:500}
+.copy{position:absolute;top:10px;right:10px;padding:6px 11px;border-radius:8px;
+  background:var(--btn);font-size:11.5px;color:var(--muted)}
+.copy:hover{background:var(--btn-hover);color:var(--fg)}
+
+/* playground */
+.pg{display:grid;grid-template-columns:1fr 300px;gap:16px}
+.stage{background:var(--surface);border-radius:26px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:26px;padding:36px 20px;min-height:340px}
+.sizes{display:flex;align-items:flex-end;gap:24px}
+.sizes figure{display:flex;flex-direction:column;align-items:center;gap:8px}
+.sizes figcaption{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--faint)}
+.panel{background:var(--surface);border-radius:20px;padding:16px}
+.field{margin-bottom:14px}
+.field label{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:6px}
+.field label span{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--faint)}
+input[type=range]{-webkit-appearance:none;width:100%;height:3px;border-radius:2px;
+  background:var(--line);outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;
+  border-radius:50%;background:var(--fg);cursor:pointer}
+input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;
+  background:var(--fg);border:none;cursor:pointer}
+input[type=color]{-webkit-appearance:none;width:100%;height:26px;border:1px solid var(--line);
+  border-radius:7px;background:none;padding:2px;cursor:pointer}
+input[type=color]::-webkit-color-swatch-wrapper{padding:0}
+input[type=color]::-webkit-color-swatch{border:none;border-radius:5px}
+.states{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
+.stbtn{padding:7px 13px;border-radius:999px;background:var(--btn);font-size:12.5px;
+  color:var(--muted);transition:all .15s}
+.stbtn:hover{background:var(--btn-hover);color:var(--fg)}
+.stbtn.on{background:var(--accent);color:#052620;font-weight:500}
+.chips{display:flex;gap:5px;flex-wrap:wrap}
+.szchip{padding:5px 10px;border-radius:8px;background:var(--btn);font-size:11.5px;color:var(--muted)}
+.szchip.on{background:var(--btn-hover);color:var(--fg)}
+footer{margin-top:64px;text-align:center;color:var(--faint);font-size:13px}
+footer a{color:var(--muted);text-decoration:none}
+footer a:hover{color:var(--fg)}
+@media (max-width:820px){
+  .grid2{grid-template-columns:1fr}
+  .pg{grid-template-columns:1fr}
+  h1{font-size:27px}
+}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="topnav">
+      <button class="iconbtn" id="theme-btn" title="Toggle theme" aria-label="Toggle theme">◐</button>
+    </div>
+    <div class="hero-orb"><canvas id="hero"></canvas></div>
+    <h1>Orb Dots</h1>
+    <p class="sub">Dotted thought-orb loading indicators for AI &amp; agent UIs.
+       Six animated states, size-tuned presets, auto dark/light, zero dependencies.</p>
+  </header>
+
+  <!-- hero examples -->
+  <div class="grid2">
+    <div class="card"><div class="pill">
+      <canvas data-orb="solving" data-size="56"></canvas>
+      <span class="shim">Solving&hellip;</span></div></div>
+    <div class="card"><div class="pill">
+      <canvas data-orb="composing" data-size="56"></canvas>
+      <span class="shim">Composing&hellip;</span></div></div>
+  </div>
+  <div class="grid2">
+    <div class="card sm"><div class="chip">
+      <canvas data-orb="working" data-size="20"></canvas>
+      <span>Agent working&hellip;</span></div></div>
+    <div class="card sm"><div class="chip">
+      <canvas data-orb="listening" data-size="20"></canvas>
+      <span>Agent listening&hellip;</span></div></div>
+    <div class="card sm"><div class="chip">
+      <canvas data-orb="searching" data-size="20"></canvas>
+      <span>Agent searching&hellip;</span></div></div>
+    <div class="card sm"><div class="chip">
+      <canvas data-orb="shaping" data-size="20"></canvas>
+      <span>Agent shaping&hellip;</span></div></div>
+  </div>
+
+  <!-- install -->
+  <section>
+    <h2>Installation</h2>
+    <p class="lead">One file, no build step, no dependencies. Drop it in and it mounts itself.</p>
+    <div class="codebox">
+      <div class="codetabs" id="install-tabs"></div>
+      <div class="codebody">
+        <button class="copy" data-copy="install">Copy</button>
+        <pre id="install-code"></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- playground -->
+  <section>
+    <h2>Playground</h2>
+    <p class="lead">Tune it live. The code below updates with your settings — copy it straight into your project.</p>
+    <div class="states" id="states"></div>
+    <div class="pg">
+      <div class="stage">
+        <canvas id="pg-main"></canvas>
+        <div class="sizes">
+          <figure><canvas class="pv" data-s="16"></canvas><figcaption>16</figcaption></figure>
+          <figure><canvas class="pv" data-s="20"></canvas><figcaption>20</figcaption></figure>
+          <figure><canvas class="pv" data-s="28"></canvas><figcaption>28</figcaption></figure>
+          <figure><canvas class="pv" data-s="40"></canvas><figcaption>40</figcaption></figure>
+          <figure><canvas class="pv" data-s="64"></canvas><figcaption>64</figcaption></figure>
+        </div>
+        <div class="chip">
+          <canvas class="pv" data-s="20"></canvas>
+          <span class="shim" id="chip-label">Agent working&hellip;</span>
+        </div>
+      </div>
+      <div class="panel" id="panel"></div>
+    </div>
+  </section>
+
+  <!-- generated code -->
+  <section>
+    <h2>Your orb</h2>
+    <p class="lead">Live output for the settings above.</p>
+    <div class="codebox">
+      <div class="codetabs" id="out-tabs"></div>
+      <div class="codebody">
+        <button class="copy" data-copy="out">Copy</button>
+        <pre id="out-code"></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- states reference -->
+  <section>
+    <h2>The six states</h2>
+    <p class="lead">Each one is a distinct mechanic, not a recoloured spinner.</p>
+    <div class="codebox"><div class="codebody"><pre id="states-doc"></pre></div></div>
+  </section>
+
+  <footer>
+    Zero dependencies &middot; MIT licensed &middot; canvas 2D, no WebGL<br>
+    Concept inspired by <a href="https://github.com/Jakubantalik/thinking-orbs" target="_blank" rel="noopener">thinking-orbs</a>
+    by Jakub Antalik &amp; Alex Brinza &middot; independent implementation
+  </footer>
+</main>
+
+<script>
+/* ==== orb-dots library (inlined) ==== */
+/*!
+ * orb-dots v1.0.0 — dotted thought-orb loading indicators for AI & agent UIs
+ * Zero dependencies · Canvas 2D · works in every modern browser
+ * MIT License
+ *
+ * Concept inspired by "thinking-orbs" by Jakub Antalik & Alex Brinza.
+ * This is an independent implementation.
+ *
+ *   <canvas data-orb="searching" data-size="24"></canvas>
+ *   <script src="orb-dots.js"><\/script>          // auto-mounts [data-orb]
+ *
+ *   const orb = OrbDots.create(canvas, { state: 'thinking', size: 64 });
+ *   orb.setState('solving'); orb.setSpeed(1.5); orb.pause(); orb.destroy();
+ */
+(function (root, factory) {
+  if (typeof module === 'object' && module.exports) module.exports = factory();
+  else if (typeof define === 'function' && define.amd) define([], factory);
+  else root.OrbDots = factory();
+}(typeof self !== 'undefined' ? self : this, function () {
+'use strict';
+
+var DOT_CONFIG = {
+  "dotColor": "#ffffff",
+  "accent": "#64f0d2",
+  "useAccent": false,
+  "structure": "sphere",
+  "rings": 13,
+  "density": 22,
+  "rsPow": 0.5,
+  "tilt": 0.38,
+  "spin": 0.18,
+  "roll": -0.06,
+  "drift": 0.25,
+  "shimmer": 1,
+  "flicker": 0.45,
+  "dotPx": 0,
+  "cols": 13,
+  "dotScale": 0.78,
+  "gap": 1,
+  "hex": true,
+  "speed": 1,
+  "softness": 1,
+  "minAlpha": 0.06,
+  "glow": 0.35,
+  "jitter": 0,
+  "theme": "dark"
+};
+var DOT_STATE_TINT = {"working":"#fbbf24","searching":"#5eb8ff","solving":"#a78bfa","composing":"#f472b6","shaping":"#4ade80","idle":null,"listening":"#64f0d2","thinking":"#a78bfa","processing":"#fbbf24","speaking":null,"success":"#4ade80","error":"#f87171","sleeping":"#64748b","loading":"#94a3b8"};
+
+function dotField(state,nx,ny,r,ang,t,soft,flatEdge){
+  var v=0, edge=flatEdge?1-smooth(0.62,1.0,r):1.0;
+  switch(state){
+    case 'idle':
+      v=edge*(0.55+0.45*Math.sin(t*1.1-r*2.2));
+      break;
+    case 'listening':                     /* concentric intake ripples */
+      v=edge*(0.42+0.58*Math.sin(r*7.5-t*3.4));
+      break;
+    case 'thinking':                      /* slow double-arm swirl */
+      v=edge*(0.4+0.6*Math.sin(ang*2+t*2.1-r*4.4));
+      break;
+    case 'searching':                     /* sweeping radar beam */
+      var d=Math.abs(wrapPi(ang-t*2.6));
+      v=edge*(0.18+0.9*Math.exp(-d*d*2.4)*(0.55+0.45*r));
+      break;
+    case 'processing':                    /* orbiting comet */
+      var pa=Math.abs(wrapPi(ang-t*3.4)), rr=Math.abs(r-0.62);
+      v=edge*(0.16+1.05*Math.exp(-pa*pa*1.6-rr*rr*26.0));
+      break;
+    case 'speaking':                      /* vertical waveform bands */
+      v=edge*(0.3+0.72*Math.abs(Math.sin(nx*3.1+t*3.0))*(1.0-Math.abs(ny)*0.55));
+      break;
+    case 'success':                       /* bloom outward, settle full */
+      var w=(t*1.5)%3.0;
+      v=edge*(w<1.4?smooth(w-0.35,w,r)*1.1:1.0);
+      break;
+    case 'error':                         /* double-flash + jitter */
+      var f=(t*2.2)%2.0;
+      v=edge*(f<0.22||(f>0.42&&f<0.64)?1.0:0.34);
+      break;
+    case 'sleeping':                      /* long shallow breath */
+      v=edge*(0.14+0.3*Math.sin(t*0.55-r*1.4));
+      break;
+    default:                              /* loading: rotating dashes */
+      v=edge*(0.22+0.85*Math.pow(Math.max(0,Math.sin(ang*3-t*3.2)),3.0));
+  }
+  return clamp(v*soft,0,1);
+}
+function smooth(a,b,x){var u=clamp((x-a)/(b-a||1e-4),0,1);return u*u*(3-2*u);}
+function clamp(v,a,b){return v<a?a:(v>b?b:v);}
+function wrapPi(a){while(a>Math.PI)a-=6.28318530718;while(a<-Math.PI)a+=6.28318530718;return a;}
+/* Latitude-ring lattice: dots sit on rings of constant latitude with even
+   angular spacing, which is what makes meridian sweeps, band scrambles and
+   waveforms-through-rings readable. Each entry: [lat, lon, ringIndex, seed]. */
+var _latCache={};
+function latticePoints(rings,density){
+  var key=rings+'x'+density;
+  if(_latCache[key])return _latCache[key];
+  var pts=[];
+  for(var i=0;i<rings;i++){
+    var lat=-Math.PI/2+Math.PI*(i+0.5)/rings;
+    var cr=Math.cos(lat);
+    var n=Math.max(1,Math.round(density*cr));
+    for(var j=0;j<n;j++){
+      var lon=2*Math.PI*j/n+((i%2)?Math.PI/n:0);
+      pts.push([lat,lon,i,((i*17+j*7)*0.6180339887)%1,j,n]);
+    }
+  }
+  return _latCache[key]=pts;
+}
+/* dot radius grows sub-linearly with orb size (power ~0.6), so a 20px orb
+   keeps chunky readable dots while a 180px orb stays fine-grained */
+function radiusScale(size,pow){return Math.pow(size/64,pow===undefined?0.6:pow);}
+function wrapAng(a){while(a>Math.PI)a-=6.28318530718;while(a<-Math.PI)a+=6.28318530718;return a;}
+
+/* ---- the six lattice behaviours ---- */
+function latticeState(state,p,t,o){
+  /* returns {dlon, dlat, rr, v} : longitude/latitude offsets, radial scale, brightness */
+  var lat=p[0], lon=p[1], ring=p[2], sd=p[3];
+  var dlon=0, dlat=0, rr=1, v=0.55;
+  switch(state){
+    case 'working':            /* particles riding tilted orbits */
+      var orbit=(ring%3);
+      dlon=t*(0.5+orbit*0.25);
+      dlat=Math.sin(t*0.8+orbit*2.1)*0.10;
+      v=0.30+0.70*Math.pow(Math.max(0,Math.sin(lon+dlon+orbit*2.0)),2.0);
+      break;
+    case 'searching':          /* a scan meridian sweeps the globe */
+      var sweep=wrapAng(lon-t*1.5);
+      v=0.16+0.95*Math.exp(-sweep*sweep*3.2);
+      rr=1+0.05*Math.exp(-sweep*sweep*3.2);
+      break;
+    case 'solving':            /* bands scramble, then click back solved */
+      var cyc=(t*0.45)%1, step=Math.floor(t*0.45);
+      var ease=cyc<0.62?(1-Math.pow(1-cyc/0.62,3)):1;
+      var target=(((ring*37+step*53)%7)-3)*(Math.PI/6);
+      var prev=(((ring*37+(step-1)*53)%7)-3)*(Math.PI/6);
+      dlon=prev+(target-prev)*ease;
+      v=0.42+0.5*(cyc>0.62?1:ease*0.7);
+      break;
+    case 'listening':          /* a waveform rolls through the rings */
+      var w=Math.sin(lat*3.0-t*2.2);
+      rr=1+w*0.11;
+      v=0.28+0.72*(0.5+0.5*w);
+      break;
+    case 'composing':          /* undulating multi-band sash */
+      var sash=lat-Math.sin(lon*2.0+t*1.3)*0.42;
+      var band=Math.abs(wrapAng(sash*2.4));
+      v=0.14+0.95*Math.exp(-band*band*2.6);
+      rr=1+0.04*Math.exp(-band*band*2.6);
+      break;
+    case 'shaping':            /* handled as an outline morph in the draw fn */
+      v=0.6;
+      break;
+    default:
+      return null;             /* fall through to the AI-state field */
+  }
+  return {dlon:dlon,dlat:dlat,rr:rr,v:v*o};
+}
+var LATTICE_STATES=['working','searching','solving','listening','composing','shaping'];
+/* unit-radius outline sampler: 0 sides = circle, else regular polygon */
+function polyPoint(sides,u){
+  if(!sides){var a=u*6.28318530718;return [Math.cos(a),Math.sin(a)];}
+  var seg=u*sides, k=Math.floor(seg), f=seg-k;
+  var a1=(k/sides)*6.28318530718-Math.PI/2, a2=((k+1)/sides)*6.28318530718-Math.PI/2;
+  var x1=Math.cos(a1),y1=Math.sin(a1),x2=Math.cos(a2),y2=Math.sin(a2);
+  return [x1+(x2-x1)*f, y1+(y2-y1)*f];
+}
+function paintDot(g,x,y,rad,a,v,base,tint,cfg,light){
+  if(rad<=0)return;
+  var c3=tint?mixRgb(base,tint,Math.min(1,v*1.15)):base;
+  var rgb=Math.round(c3[0])+','+Math.round(c3[1])+','+Math.round(c3[2]);
+  if(cfg.glow>0&&v>0.3&&!light){
+    g.shadowBlur=rad*3.0*cfg.glow;
+    g.shadowColor='rgba('+rgb+','+(a*0.8).toFixed(3)+')';
+  }else g.shadowBlur=0;
+  g.fillStyle='rgba('+rgb+','+Math.min(1,a).toFixed(3)+')';
+  g.beginPath();g.arc(x,y,rad,0,6.2832);g.fill();
+}
+
+function hexToRgb(h){h=h.replace('#','');
+  if(h.length===3)h=h.split('').map(function(c){return c+c;}).join('');
+  return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];}
+function mixRgb(a,b,t){return [a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t];}
+var drawDotOrb = function drawDotOrb(cv,size,time,state,cfg){
+  /* guard: zero/negative/NaN size must never produce NaN geometry */
+  size=Math.max(1,(typeof size==='number'&&isFinite(size))?size:1);
+  var dpr=Math.min((typeof window!=='undefined'&&window.devicePixelRatio)||1,2);
+  if(cv.width!==size*dpr||cv.height!==size*dpr){
+    cv.width=size*dpr;cv.height=size*dpr;
+    /* when the controller owns sizing (applyStyle===false) authors can render
+       at one resolution and display at another (supersampling) */
+    if(cfg.applyStyle!==false){cv.style.width=size+'px';cv.style.height=size+'px';}
+  }
+  var g=cv.getContext('2d');
+  g.setTransform(dpr,0,0,dpr,0,0);
+  g.clearRect(0,0,size,size);
+  var R=size/2, cx=R, cy=R, t=time*cfg.speed;
+  var base=hexToRgb(cfg.dotColor);
+  var tintHex=cfg.useAccent?(DOT_STATE_TINT[state]||cfg.accent):null;
+  var tint=tintHex?hexToRgb(tintHex):null;
+  var light=cfg.theme==='light';
+  g.globalCompositeOperation=light?'source-over':'lighter';
+
+  if(cfg.structure!=='grid'){
+    /* ---- lattice globe: latitude rings, tilted axis, orthographic ---- */
+    var Rs=R*0.76;                                  /* sphere inset in the box */
+    /* base sized so the *median painted* radius lands on the reference's
+       1.34px at 64px (the depth and brightness multipliers below average ~0.7) */
+    var dotPx=cfg.dotPx>0?cfg.dotPx
+              :Math.max(0.34,2.3*radiusScale(size,cfg.rsPow)*cfg.dotScale);
+    var rings=Math.max(3,Math.round(cfg.rings*Math.min(1,0.42+size/230)));
+    var density=Math.max(3,Math.round(cfg.density*Math.min(1,0.42+size/230)));
+    var pts=latticePoints(rings,density);
+    var yaw=t*cfg.spin, tilt=cfg.tilt;
+    var ct=Math.cos(tilt), st=Math.sin(tilt);
+    var isLat=LATTICE_STATES.indexOf(state)>=0;
+
+    if(state==='shaping'){                          /* outline morph, not a globe */
+      var seg=(t*0.42)%3, phase=Math.floor(seg), fr=seg-phase;
+      var ease=fr<0.55?(1-Math.pow(1-fr/0.55,3)):1;
+      var sides=[0,3,4];                            /* circle, triangle, square */
+      var nOut=Math.max(14,Math.round(density*2.2));
+      for(var q=0;q<nOut;q++){
+        var u=q/nOut;
+        var pA=polyPoint(sides[phase],u), pB=polyPoint(sides[(phase+1)%3],u);
+        var ox=pA[0]+(pB[0]-pA[0])*ease, oy=pA[1]+(pB[1]-pA[1])*ease;
+        var rot=t*cfg.roll;
+        var xr=ox*Math.cos(rot)-oy*Math.sin(rot), yr=ox*Math.sin(rot)+oy*Math.cos(rot);
+        var va=0.55+0.45*Math.sin(u*6.2832*2-t*2.0);
+        var aa=(cfg.minAlpha+va*0.9)*(1-cfg.flicker*0.35*(0.5+0.5*Math.sin(t*6.0+q*1.7)));
+        paintDot(g,cx+xr*Rs,cy+yr*Rs,dotPx*(0.7+0.5*va),aa,va,base,tint,cfg,light);
+      }
+      g.shadowBlur=0;return;
+    }
+
+    for(var i=0;i<pts.length;i++){
+      var p=pts[i], sd=p[3];
+      var mod=isLat?latticeState(state,p,t,1):null;
+      var lat=p[0]+(mod?mod.dlat:0), lon=p[1]+yaw+(mod?mod.dlon:0);
+      var w=cfg.drift, sh=cfg.shimmer;
+      lon+=Math.sin(t*0.9+sd*24.1)*0.06*w+Math.sin(t*37.7+sd*61.3)*0.010*sh;
+      lat+=Math.cos(t*0.7+sd*17.7)*0.04*w+Math.cos(t*37.7+sd*44.9)*0.008*sh;
+      var rr3=(mod?mod.rr:1);
+      var cl=Math.cos(lat)*rr3, X0=cl*Math.cos(lon), Y0=Math.sin(lat)*rr3, Z0=cl*Math.sin(lon);
+      /* tilt the pole toward the viewer so rings read as a globe */
+      var Y1=Y0*ct-Z0*st, Z=Y0*st+Z0*ct;
+      /* in-plane roll */
+      var ro=t*cfg.roll, cr=Math.cos(ro), sr2=Math.sin(ro);
+      var X=X0*cr-Y1*sr2, Y=X0*sr2+Y1*cr;
+      var depth=(Z+1)/2;
+      var v=mod?mod.v
+              :dotField(state,X,Y,Math.sqrt(X*X+Y*Y),Math.atan2(Y,X),t,cfg.softness,false);
+      var tw=1-cfg.flicker*0.4*(0.5+0.5*Math.sin(t*6.0+sd*39.1));
+      var a=(cfg.minAlpha+v*0.95)*(0.34+0.66*depth)*tw;
+      if(a<0.012)continue;
+      paintDot(g,cx+X*Rs,cy+Y*Rs,dotPx*(0.6+0.4*depth)*(0.7+0.45*v),a,v,base,tint,cfg,light);
+    }
+    g.shadowBlur=0;
+    return;
+  }
+
+  /* ---- grid mode (flat hex/square lattice) ---- */
+  var maxN=Math.max(5,Math.floor(size/2.9));
+  var gn=Math.max(3,Math.min(Math.round(cfg.cols),maxN));
+  var step=(size*0.94)/gn;
+  var rowStep=cfg.hex?step*0.866:step;
+  var rows=Math.ceil(size/rowStep)+1;
+  for(var row=0;row<rows;row++){
+    var y=(row-(rows-1)/2)*rowStep;
+    var off=(cfg.hex&&row%2)?step/2:0;
+    for(var col=-Math.ceil(gn/2)-1;col<=Math.ceil(gn/2)+1;col++){
+      var x=col*step+off;
+      var dist=Math.sqrt(x*x+y*y)/R;
+      if(dist>1.02)continue;
+      var nx=x/R, ny=y/R;
+      var gv=dotField(state,nx,ny,dist,Math.atan2(ny,nx),t,cfg.softness,true);
+      var ga2=Math.max(cfg.minAlpha,gv);
+      var jx=0,jy=0;
+      if(cfg.jitter>0){
+        var s=Math.sin(col*12.9898+row*78.233)*43758.5453; var rnd=s-Math.floor(s);
+        jx=Math.sin(t*7+rnd*30)*cfg.jitter*step*0.22;
+        jy=Math.cos(t*6.3+rnd*24)*cfg.jitter*step*0.22;
+      }
+      var grad=Math.max(0.35,step*0.5*cfg.dotScale*(0.55+0.65*gv)/cfg.gap);
+      var gc=tint?mixRgb(base,tint,Math.min(1,gv*1.15)):base;
+      var grgb=Math.round(gc[0])+','+Math.round(gc[1])+','+Math.round(gc[2]);
+      if(cfg.glow>0&&gv>0.25&&!light){
+        g.shadowBlur=grad*3.2*cfg.glow;
+        g.shadowColor='rgba('+grgb+','+(ga2*0.85).toFixed(3)+')';
+      }else g.shadowBlur=0;
+      g.fillStyle='rgba('+grgb+','+ga2.toFixed(3)+')';
+      g.beginPath();g.arc(cx+x+jx,cy+y+jy,grad,0,6.2832);g.fill();
+    }
+  }
+  g.shadowBlur=0;
+};
+
+
+/* ------------------------------------------------------------------ *
+ *  Presets: the six agent states, plus size-tuned defaults
+ * ------------------------------------------------------------------ */
+var STATES = ['working','searching','solving','listening','composing','shaping'];
+
+var THEMES = {
+  dark:  { dotColor: '#ffffff', glow: 0.35, minAlpha: 0.06 },
+  light: { dotColor: '#0b0d12', glow: 0,    minAlpha: 0.12 }
+};
+
+/* Small orbs are a coarser globe, not a shrunken dense one. */
+function sizeTune(size) {
+  if (size <= 28) return { rings: 8,  density: 13 };
+  if (size <= 48) return { rings: 10, density: 17 };
+  return           { rings: 13, density: 22 };
+}
+
+function resolveTheme(el, pref) {
+  if (pref === 'dark' || pref === 'light') return pref;
+  /* walk the element's own ancestor chain — must work in detached trees and
+     shadow roots, so this is not gated on a global `document` */
+  var n = el;
+  while (n && n.nodeType === 1) {
+    var attr = n.getAttribute && n.getAttribute('data-theme');
+    if (attr === 'dark' || attr === 'light') return attr;
+    if (n.classList && n.classList.contains('dark')) return 'dark';
+    if (n.classList && n.classList.contains('light')) return 'light';
+    n = n.parentNode || n.host || null;      /* cross shadow-root boundary */
+  }
+  if (typeof matchMedia === 'function' &&
+      matchMedia('(prefers-color-scheme: light)').matches) return 'light';
+  return 'dark';
+}
+
+function reducedMotion() {
+  return typeof matchMedia === 'function' &&
+         matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+/* ------------------------------------------------------------------ *
+ *  Orb controller
+ * ------------------------------------------------------------------ */
+function Orb(canvas, options) {
+  if (!canvas) throw new Error('OrbDots: a canvas element is required');
+  var o = options || {};
+  this.canvas = canvas;
+  this.state = o.state || 'working';
+  this.size = o.size || canvas.clientWidth || 64;
+  this.speedMul = o.speed == null ? 1 : o.speed;
+  this.themePref = o.theme || 'auto';
+  this.paused = !!o.paused;
+  this.userCfg = o.config || {};
+  /* display size in CSS px; defaults to `size`, but an author-set inline size
+     is respected so render-at-64 / show-at-40 supersampling keeps working */
+  this.display = o.display || null;
+  this._authorSized = !!(canvas.style && canvas.style.width);
+  this.t = 0;
+  this._last = 0;
+  this._visible = true;
+  this._build();
+
+  var self = this;
+
+  /* live theme updates */
+  if (this.themePref === 'auto' && typeof MutationObserver === 'function') {
+    this._mo = new MutationObserver(function () { self._build(); self._paint(); });
+    var n = canvas.parentNode;
+    while (n && n.nodeType === 1) {
+      this._mo.observe(n, { attributes: true, attributeFilter: ['data-theme', 'class'] });
+      n = n.parentNode;
+    }
+    if (typeof matchMedia === 'function') {
+      this._mq = matchMedia('(prefers-color-scheme: light)');
+      this._onMq = function () { self._build(); self._paint(); };
+      if (this._mq.addEventListener) this._mq.addEventListener('change', this._onMq);
+      else if (this._mq.addListener) this._mq.addListener(this._onMq);
+    }
+  }
+
+  /* stop animating when scrolled out of view — saves battery on long pages */
+  if (typeof IntersectionObserver === 'function') {
+    this._io = new IntersectionObserver(function (e) {
+      self._visible = e[0].isIntersecting;
+    }, { threshold: 0 });
+    this._io.observe(canvas);
+  }
+
+  this._loop = function (now) {
+    self._raf = requestAnimationFrame(self._loop);
+    /* a non-finite timestamp from a polyfilled rAF would poison the clock
+       forever (Math.max(0, NaN) is NaN), so reject it outright */
+    if (typeof now !== 'number' || !isFinite(now)) return;
+    if (!self._last) self._last = now;
+    var dt = (now - self._last) / 1000;
+    if (!isFinite(dt)) dt = 0;
+    dt = Math.max(0, Math.min(dt, 0.05));
+    self._last = now;
+    if (self.paused || !self._visible) return;
+    self.t += dt * self.speedMul;
+    self._paint();
+  };
+  this._raf = requestAnimationFrame(this._loop);
+  this._applySize();
+  this._paint();
+}
+
+Orb.prototype._build = function () {
+  var theme = resolveTheme(this.canvas, this.themePref);
+  var tuned = sizeTune(this.size);
+  this.cfg = {};
+  for (var k in DOT_CONFIG) this.cfg[k] = DOT_CONFIG[k];
+  for (var k2 in THEMES[theme]) this.cfg[k2] = THEMES[theme][k2];
+  for (var k3 in tuned) this.cfg[k3] = tuned[k3];
+  this.cfg.theme = theme;
+  for (var k4 in this.userCfg) this.cfg[k4] = this.userCfg[k4];
+  this.cfg.applyStyle = false;            /* the controller sizes the canvas */
+  if (reducedMotion()) { this.cfg.shimmer = 0; this.cfg.drift = 0; this.cfg.flicker = 0.1; }
+  this.theme = theme;
+};
+
+Orb.prototype._applySize = function () {
+  var px = this.display || (this._authorSized ? null : this.size);
+  if (px && this.canvas.style) {
+    this.canvas.style.width = px + 'px';
+    this.canvas.style.height = px + 'px';
+  }
+};
+
+Orb.prototype._paint = function () {
+  drawDotOrb(this.canvas, this.size, this.t, this.state, this.cfg);
+};
+
+Orb.prototype.setState = function (s) {
+  this.state = s; if (this.paused) this._paint(); return this;
+};
+Orb.prototype.setSize = function (px, displayPx) {
+  this.size = Math.max(1, px);
+  if (displayPx !== undefined) this.display = displayPx;
+  this._build(); this._applySize(); this._paint(); return this;
+};
+Orb.prototype.setSpeed = function (m) { this.speedMul = m; return this; };
+Orb.prototype.setTheme = function (t) {
+  this.themePref = t; this._build(); this._paint(); return this;
+};
+Orb.prototype.set = function (patch) {
+  for (var k in patch) this.userCfg[k] = patch[k];
+  this._build(); this._paint(); return this;
+};
+Orb.prototype.pause  = function () { this.paused = true;  return this; };
+Orb.prototype.play   = function () { this.paused = false; return this; };
+Orb.prototype.toPNG  = function () { return this.canvas.toDataURL('image/png'); };
+Orb.prototype.destroy = function () {
+  cancelAnimationFrame(this._raf);
+  if (this._mo) this._mo.disconnect();
+  if (this._io) this._io.disconnect();
+  if (this._mq && this._onMq) {
+    if (this._mq.removeEventListener) this._mq.removeEventListener('change', this._onMq);
+    else if (this._mq.removeListener) this._mq.removeListener(this._onMq);
+  }
+};
+
+/* ------------------------------------------------------------------ *
+ *  Public API
+ * ------------------------------------------------------------------ */
+function create(canvas, options) { return new Orb(canvas, options); }
+
+/* auto-mount every <canvas data-orb="state"> on the page */
+function auto(root) {
+  var scope = root || (typeof document !== 'undefined' ? document : null);
+  if (!scope) return [];
+  var out = [];
+  var nodes = scope.querySelectorAll('canvas[data-orb]');
+  for (var i = 0; i < nodes.length; i++) {
+    var el = nodes[i];
+    if (el.__orb) continue;
+    var st = el.getAttribute('data-orb') || 'working';
+    var orb = new Orb(el, {
+      state: st,
+      size: parseInt(el.getAttribute('data-size'), 10) || el.clientWidth || 64,
+      display: parseInt(el.getAttribute('data-display'), 10) || null,
+      speed: parseFloat(el.getAttribute('data-speed')) || 1,
+      theme: el.getAttribute('data-theme-mode') || 'auto'
+    });
+    if (el.setAttribute && !el.getAttribute('aria-label')) {
+      el.setAttribute('role', 'img');
+      el.setAttribute('aria-label', st + '\u2026');
+    }
+    el.__orb = orb;
+    out.push(orb);
+  }
+  return out;
+}
+
+if (typeof document !== 'undefined') {
+  if (document.readyState === 'loading')
+    document.addEventListener('DOMContentLoaded', function () { auto(); });
+  else auto();
+}
+
+return {
+  create: create,
+  auto: auto,
+  Orb: Orb,
+  STATES: STATES,
+  defaults: DOT_CONFIG,
+  draw: drawDotOrb,
+  version: '1.0.0'
+};
+}));
+
+</script>
+<script>
+(function(){
+  var $=function(s){return document.querySelector(s)};
+  var STATES=OrbDots.STATES;
+  var state='working', size=120, speed=1;
+  /* cfg holds ONLY what the user has actually changed, so the small previews
+     keep the library's per-size tuning and the generated code stays clean */
+  var cfg={};
+  var base=OrbDots.defaults;
+
+  /* hero */
+  var hero=OrbDots.create($('#hero'),{state:'searching',size:84});
+
+  /* theme toggle */
+  $('#theme-btn').onclick=function(){
+    var cur=document.documentElement.getAttribute('data-theme');
+    document.documentElement.setAttribute('data-theme',cur==='dark'?'light':'dark');
+  };
+
+  /* playground orbs */
+  var main=OrbDots.create($('#pg-main'),{state:state,size:size,config:cfg});
+  var previews=[].map.call(document.querySelectorAll('.pv'),function(c){
+    return OrbDots.create(c,{state:state,size:+c.dataset.s,config:cfg});
+  });
+  function allOrbs(){return [main].concat(previews)}
+
+  /* state buttons */
+  var sc=$('#states');
+  STATES.forEach(function(s){
+    var b=document.createElement('button');
+    b.className='stbtn'+(s===state?' on':'');
+    b.textContent=s;
+    b.onclick=function(){
+      state=s;
+      sc.querySelectorAll('.stbtn').forEach(function(x){x.classList.remove('on')});
+      b.classList.add('on');
+      allOrbs().forEach(function(o){o.setState(s)});
+      $('#chip-label').textContent='Agent '+s+'\u2026';
+      $('#chip-label').setAttribute('data-text','Agent '+s+'\u2026');
+      render();
+    };
+    sc.appendChild(b);
+  });
+
+  /* controls */
+  var CONTROLS=[
+    {k:'__size',l:'Size',min:14,max:240,step:1,get:function(){return size}},
+    {k:'__speed',l:'Speed',min:.25,max:3,step:.05,get:function(){return speed}},
+    {k:'rings',l:'Latitude rings',min:4,max:26,step:1},
+    {k:'density',l:'Ring density',min:5,max:44,step:1},
+    {k:'tilt',l:'Axis tilt',min:0,max:1.2,step:.01},
+    {k:'spin',l:'Spin speed',min:0,max:1,step:.01},
+    {k:'dotScale',l:'Dot size',min:.3,max:2.5,step:.01},
+    {k:'glow',l:'Glow',min:0,max:1.2,step:.01},
+    {k:'flicker',l:'Flicker',min:0,max:1,step:.01}
+  ];
+  var panel=$('#panel');
+  panel.innerHTML='<div class="field"><label>Preview size</label><div class="chips" id="szchips"></div></div>';
+  [16,20,24,32,64,120,180].forEach(function(s){
+    var b=document.createElement('button');
+    b.className='szchip'+(s===size?' on':'');
+    b.textContent=s;
+    b.onclick=function(){setSize(s);render();};
+    $('#szchips').appendChild(b);
+  });
+  CONTROLS.forEach(function(c){
+    var f=document.createElement('div');f.className='field';
+    var val=c.get?c.get():base[c.k];
+    f.innerHTML='<label>'+c.l+'<span>'+val+'</span></label>';
+    var r=document.createElement('input');
+    r.type='range';r.min=c.min;r.max=c.max;r.step=c.step;r.value=val;
+    r.oninput=function(){
+      var v=+r.value;
+      f.querySelector('span').textContent=v;
+      if(c.k==='__size')setSize(v);
+      else if(c.k==='__speed'){speed=v;allOrbs().forEach(function(o){o.setSpeed(v)});}
+      else {cfg[c.k]=v;allOrbs().forEach(function(o){o.set(cfg)});}
+      render();
+    };
+    f.appendChild(r);panel.appendChild(f);
+    c._el=f;
+  });
+  /* reset */
+  var rf=document.createElement('button');
+  rf.className='szchip';rf.style.marginTop='4px';rf.textContent='Reset to defaults';
+  rf.onclick=function(){
+    cfg={};speed=1;
+    allOrbs().forEach(function(o){o.set(Object.assign({},base));o.setSpeed(1)});
+    CONTROLS.forEach(function(c){
+      if(c.k==='__size'||c.k==='__speed')return;
+      var i=c._el.querySelector('input');i.value=base[c.k];
+      c._el.querySelector('span').textContent=base[c.k];
+    });
+    render();
+  };
+
+  /* colour */
+  var cf=document.createElement('div');cf.className='field';
+  cf.innerHTML='<label>Accent colour<span>on state</span></label>';
+  var ci=document.createElement('input');ci.type='color';ci.value=cfg.accent;
+  ci.oninput=function(){
+    cfg.accent=ci.value;cfg.useAccent=true;
+    allOrbs().forEach(function(o){o.set(cfg)});render();
+  };
+  cf.appendChild(ci);panel.appendChild(cf);panel.appendChild(rf);
+
+  function setSize(v){
+    size=v;
+    main.setSize(v);
+    $('#pg-main').style.width=v+'px';$('#pg-main').style.height=v+'px';
+    document.querySelectorAll('#szchips .szchip').forEach(function(b){
+      b.classList.toggle('on',+b.textContent===v)});
+    var sizeCtl=CONTROLS[0]._el;
+    if(sizeCtl){sizeCtl.querySelector('input').value=v;sizeCtl.querySelector('span').textContent=v;}
+  }
+  setSize(size);
+
+  /* ---- code output ---- */
+  function nonDefault(){
+    var out={};
+    for(var k in cfg) if(cfg[k]!==base[k]) out[k]=cfg[k];
+    return out;
+  }
+  function cfgStr(){
+    var o=nonDefault(),parts=[];
+    for(var k in o)parts.push(k+': '+(typeof o[k]==='string'?"'"+o[k]+"'":o[k]));
+    return parts.length?'{ '+parts.join(', ')+' }':'';
+  }
+  var TABS={
+    install:[
+      ['HTML','<b>&lt;script src="orb-dots.js"&gt;&lt;/script&gt;</b>\n\n'+
+        '&lt;!-- any canvas with data-orb mounts automatically --&gt;\n'+
+        '<b>&lt;canvas data-orb="searching" data-size="24"&gt;&lt;/canvas&gt;</b>'],
+      ['JavaScript','<b>const orb = OrbDots.create(canvas, {\n'+
+        '  state: \'searching\',\n  size: 64\n});</b>\n\n'+
+        'orb.setState(\'solving\');   // switch animation\n'+
+        'orb.setSpeed(1.5);         // speed multiplier\n'+
+        'orb.setTheme(\'light\');    // auto | dark | light\n'+
+        'orb.pause(); orb.play();   // freeze / resume\n'+
+        'orb.toPNG();               // data URL snapshot\n'+
+        'orb.destroy();             // full cleanup'],
+      ['React','import OrbDot from \'./OrbDots.jsx\';\n\n'+
+        'function Status({ busy }) {\n'+
+        '  return (\n'+
+        '    <b>&lt;OrbDot state="thinking" size={24} /&gt;</b>\n'+
+        '  );\n}'],
+      ['TypeScript','import OrbDots, { OrbState } from \'./orb-dots\';\n\n'+
+        'const state: OrbState = \'composing\';\n'+
+        'const orb = OrbDots.create(canvasEl, { state, size: 64 });']
+    ],
+    out:[
+      ['HTML',function(){
+        return '&lt;canvas data-orb="'+state+'" data-size="'+size+'"'+
+          (speed!==1?' data-speed="'+speed+'"':'')+'&gt;&lt;/canvas&gt;';
+      }],
+      ['JavaScript',function(){
+        var c=cfgStr();
+        return 'OrbDots.create(canvas, {\n  state: \''+state+'\',\n  size: '+size+
+          (speed!==1?',\n  speed: '+speed:'')+
+          (c?',\n  config: '+c:'')+'\n});';
+      }],
+      ['React',function(){
+        var c=cfgStr();
+        return '&lt;OrbDot\n  state="'+state+'"\n  size={'+size+'}'+
+          (speed!==1?'\n  speed={'+speed+'}':'')+
+          (c?'\n  config={'+c+'}':'')+'\n/&gt;';
+      }],
+      ['Config JSON',function(){
+        return JSON.stringify(Object.assign({state:state,size:size,speed:speed},nonDefault()),null,2);
+      }]
+    ]
+  };
+  var active={install:0,out:0};
+  function renderTabs(kind){
+    var el=document.getElementById(kind+'-tabs');el.innerHTML='';
+    TABS[kind].forEach(function(t,i){
+      var b=document.createElement('button');
+      b.className='codetab'+(i===active[kind]?' on':'');
+      b.textContent=t[0];
+      b.onclick=function(){active[kind]=i;renderTabs(kind);renderCode(kind);};
+      el.appendChild(b);
+    });
+  }
+  function renderCode(kind){
+    var t=TABS[kind][active[kind]][1];
+    document.getElementById(kind+'-code').innerHTML=(typeof t==='function'?t():t);
+  }
+  function render(){renderCode('out');}
+  renderTabs('install');renderCode('install');
+  renderTabs('out');renderCode('out');
+
+  $('#states-doc').innerHTML=
+    '<b>working</b>     particles ride tilted orbits around the globe\n'+
+    '<b>searching</b>   a scan meridian sweeps across the dotted sphere\n'+
+    '<b>solving</b>     latitude bands scramble, then click back into place\n'+
+    '<b>listening</b>   a waveform rolls through the rings, pole to pole\n'+
+    '<b>composing</b>   an undulating sash band winds around the surface\n'+
+    '<b>shaping</b>     a dotted outline morphs circle \u2192 triangle \u2192 square';
+
+  /* copy buttons */
+  document.querySelectorAll('.copy').forEach(function(b){
+    b.onclick=function(){
+      var txt=document.getElementById(b.dataset.copy+'-code').textContent;
+      navigator.clipboard.writeText(txt).then(function(){
+        var o=b.textContent;b.textContent='Copied';
+        setTimeout(function(){b.textContent=o},1400);
+      }).catch(function(){b.textContent='Select & copy';});
+    };
+  });
+})();
+</script>
+</body>
+</html>

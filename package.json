@@ -1,0 +1,15 @@
+{
+  "name": "orb-dots",
+  "version": "1.0.0",
+  "description": "Dotted thought-orb loading indicators for AI & agent UIs — six animated states, size-tuned presets, auto dark/light, zero dependencies",
+  "main": "orb-dots.js",
+  "module": "orb-dots.js",
+  "types": "orb-dots.d.ts",
+  "files": ["orb-dots.js", "orb-dots.d.ts", "OrbDots.jsx", "README.md"],
+  "keywords": ["ai", "agent", "loader", "spinner", "orb", "canvas",
+               "loading-indicator", "thinking", "react", "zero-dependency"],
+  "sideEffects": false,
+  "license": "MIT",
+  "peerDependencies": { "react": ">=16.8.0" },
+  "peerDependenciesMeta": { "react": { "optional": true } }
+}
