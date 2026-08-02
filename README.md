@@ -1,4 +1,4 @@
-# Orb Dots
+# Orb Studio
 
 Dotted thought-orb loading indicators for AI & agent UIs.
 Six animated states, size-tuned presets, automatic dark/light, **zero dependencies**.
