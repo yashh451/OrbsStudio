@@ -4,7 +4,7 @@
  * MIT License.
  */
 import { useEffect, useRef } from 'react';
-import OrbDots from './orb-dots.js';
+import OrbDots from './orbs-studio.js';
 
 /**
  * <OrbDot state="searching" size={24} />
